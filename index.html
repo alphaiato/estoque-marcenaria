@@ -1,0 +1,2179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Controle de Estoque - Marcenaria</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        // IMPORTANT: Replace with your actual Firebase config
+        const firebaseConfig = {
+            apiKey: "your-api-key",
+            authDomain: "your-project.firebaseapp.com",
+            projectId: "your-project-id",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "your-app-id"
+        };
+
+        // Initialize Firebase
+        const firebaseApp = initializeApp(firebaseConfig);
+        const db = getFirestore(firebaseApp);
+
+        // Make Firebase available globally
+        window.firebaseApp = firebaseApp;
+        window.db = db;
+        window.doc = doc;
+        window.setDoc = setDoc;
+        window.getDoc = getDoc;
+        window.collection = collection;
+        window.getDocs = getDocs;
+    </script>
+    <style>
+        :root {
+            --primary: #2c5530;
+            --secondary: #4a7c59;
+            --accent: #8fb996;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --success: #28a745;
+            --info: #17a2b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Login Styles */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-header h1 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            color: var(--dark);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+        }
+
+        /* Main App Styles */
+        .app-header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background-color: white;
+            border-bottom: 1px solid #ddd;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+
+        .nav-tab:hover {
+            background-color: #f8f9fa;
+        }
+
+        .nav-tab.active {
+            border-bottom-color: var(--primary);
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .main-content {
+            padding: 2rem 0;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1rem 1.5rem;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Table Styles */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .data-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        /* Form Styles */
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+        }
+
+        .form-col {
+            flex: 1 0 300px;
+            padding: 0 10px;
+            margin-bottom: 1rem;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 15px;
+        }
+
+        .modal {
+            background-color: white;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Signature Pad */
+        .signature-container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .signature-pad {
+            width: 100%;
+            height: 200px;
+            background-color: white;
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-tabs {
+                flex-wrap: wrap;
+            }
+
+            .nav-tab {
+                flex: 1 0 50%;
+                text-align: center;
+            }
+
+            .form-col {
+                flex: 1 0 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1><i class="fas fa-tools"></i> Estoque Marcenaria</h1>
+                <p>Faça login para acessar o sistema</p>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Usuário</label>
+                    <input type="text" id="username" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-block">Entrar</button>
+            </form>
+            <div class="form-group" style="margin-top: 1rem; text-align: center;">
+                <p>Usuário: admin | Senha: admin</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app" class="hidden">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo">
+                        <i class="fas fa-tools"></i>
+                        <h1>Estoque Marcenaria</h1>
+                    </div>
+                    <div class="user-menu">
+                        <div class="user-info">
+                            <div class="user-avatar" id="userAvatar">A</div>
+                            <span id="userName">Administrador</span>
+                        </div>
+                        <button id="logoutBtn" class="btn btn-secondary">Sair</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <div class="container">
+                <div class="nav-tab active" data-tab="dashboard">Dashboard</div>
+                <div class="nav-tab" data-tab="tools">Ferramentas</div>
+                <div class="nav-tab" data-tab="materials">Materiais</div>
+                <div class="nav-tab" data-tab="products">Produtos</div>
+                <div class="nav-tab" data-tab="logs">Logs</div>
+                <div class="nav-tab" data-tab="users">Usuários</div>
+                <div class="nav-tab" data-tab="ai-predictions">Previsões IA</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container">
+                <!-- Dashboard Tab -->
+                <div id="dashboard" class="tab-content active">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Visão Geral</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h3>Ferramentas</h3>
+                                            <p id="toolsCount">0</p>
+                                            <p><span id="toolsLowStock" class="badge badge-warning">0</span> com estoque baixo</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-col">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h3>Materiais</h3>
+                                            <p id="materialsCount">0</p>
+                                            <p><span id="materialsLowStock" class="badge badge-warning">0</span> com estoque baixo</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-col">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h3>Produtos</h3>
+                                            <p id="productsCount">0</p>
+                                            <p><span id="productsLowStock" class="badge badge-warning">0</span> com estoque baixo</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="chart-container">
+                                <canvas id="stockChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tools Tab -->
+                <div id="tools" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Ferramentas</h2>
+                            <button id="addToolBtn" class="btn">Nova Ferramenta</button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Descrição</th>
+                                            <th>Quantidade</th>
+                                            <th>Condição</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="toolsTableBody">
+                                        <!-- Tools will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Materials Tab -->
+                <div id="materials" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Materiais</h2>
+                            <button id="addMaterialBtn" class="btn">Novo Material</button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Descrição</th>
+                                            <th>Quantidade</th>
+                                            <th>Fornecedor</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="materialsTableBody">
+                                        <!-- Materials will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Tab -->
+                <div id="products" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Produtos</h2>
+                            <button id="addProductBtn" class="btn">Novo Produto</button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Categoria</th>
+                                            <th>Quantidade</th>
+                                            <th>Validade</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="productsTableBody">
+                                        <!-- Products will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logs Tab -->
+                <div id="logs" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Logs de Movimentações</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label for="logDateFilter">Filtrar por data:</label>
+                                    <input type="date" id="logDateFilter" class="form-control">
+                                </div>
+                                <div class="form-col">
+                                    <label for="logUserFilter">Filtrar por usuário:</label>
+                                    <select id="logUserFilter" class="form-control">
+                                        <option value="">Todos os usuários</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-responsive" style="margin-top: 1rem;">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Data/Hora</th>
+                                            <th>Usuário</th>
+                                            <th>Ação</th>
+                                            <th>Item</th>
+                                            <th>Detalhes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="logsTableBody">
+                                        <!-- Logs will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Tab -->
+                <div id="users" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Usuários</h2>
+                            <button id="addUserBtn" class="btn">Novo Usuário</button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Usuário</th>
+                                            <th>Permissão</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="usersTableBody">
+                                        <!-- Users will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Predictions Tab -->
+                <div id="ai-predictions" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Previsões de Compras com IA</h2>
+                            <button id="generatePredictionBtn" class="btn">Gerar Previsões</button>
+                        </div>
+                        <div class="card-body">
+                            <div id="predictionResults">
+                                <!-- Predictions will be displayed here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Tool Modal -->
+    <div id="toolModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="toolModalTitle">Nova Ferramenta</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="toolForm">
+                    <input type="hidden" id="toolId">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="toolName">Nome</label>
+                            <input type="text" id="toolName" class="form-control" required>
+                        </div>
+                        <div class="form-col">
+                            <label for="toolQuantity">Quantidade</label>
+                            <input type="number" id="toolQuantity" class="form-control" required min="0">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="toolDescription">Descrição</label>
+                            <textarea id="toolDescription" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="toolCondition">Condição</label>
+                            <select id="toolCondition" class="form-control" required>
+                                <option value="nova">Nova</option>
+                                <option value="usada">Usada</option>
+                                <option value="danificada">Danificada</option>
+                            </select>
+                        </div>
+                        <div class="form-col">
+                            <label for="toolMinStock">Estoque Mínimo</label>
+                            <input type="number" id="toolMinStock" class="form-control" required min="0">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-cancel">Cancelar</button>
+                <button class="btn" id="saveToolBtn">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assignment Modal -->
+    <div id="assignmentModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Atribuir Ferramenta</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="assignmentForm">
+                    <input type="hidden" id="assignmentToolId">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="assignmentUser">Funcionário</label>
+                            <select id="assignmentUser" class="form-control" required>
+                                <option value="">Selecione um funcionário</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="assignmentDate">Data de Empréstimo</label>
+                            <input type="date" id="assignmentDate" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label>Assinatura do Funcionário</label>
+                            <div class="signature-container">
+                                <canvas id="signaturePad" class="signature-pad"></canvas>
+                            </div>
+                            <button type="button" id="clearSignature" class="btn btn-sm btn-secondary">Limpar Assinatura</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-cancel">Cancelar</button>
+                <button class="btn" id="saveAssignmentBtn">Gerar Cautela</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Material Modal -->
+    <div id="materialModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="materialModalTitle">Novo Material</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="materialForm">
+                    <input type="hidden" id="materialId">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="materialName">Nome</label>
+                            <input type="text" id="materialName" class="form-control" required>
+                        </div>
+                        <div class="form-col">
+                            <label for="materialQuantity">Quantidade</label>
+                            <input type="number" id="materialQuantity" class="form-control" required min="0">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="materialDescription">Descrição</label>
+                            <textarea id="materialDescription" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="materialSupplier">Fornecedor</label>
+                            <input type="text" id="materialSupplier" class="form-control">
+                        </div>
+                        <div class="form-col">
+                            <label for="materialMinStock">Estoque Mínimo</label>
+                            <input type="number" id="materialMinStock" class="form-control" required min="0">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-cancel">Cancelar</button>
+                <button class="btn" id="saveMaterialBtn">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="productModalTitle">Novo Produto</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="productForm">
+                    <input type="hidden" id="productId">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="productName">Nome</label>
+                            <input type="text" id="productName" class="form-control" required>
+                        </div>
+                        <div class="form-col">
+                            <label for="productCategory">Categoria</label>
+                            <input type="text" id="productCategory" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="productQuantity">Quantidade</label>
+                            <input type="number" id="productQuantity" class="form-control" required min="0">
+                        </div>
+                        <div class="form-col">
+                            <label for="productExpiry">Data de Validade</label>
+                            <input type="date" id="productExpiry" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="productDescription">Descrição</label>
+                            <textarea id="productDescription" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="productMinStock">Estoque Mínimo</label>
+                            <input type="number" id="productMinStock" class="form-control" required min="0">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-cancel">Cancelar</button>
+                <button class="btn" id="saveProductBtn">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div id="userModal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="userModalTitle">Novo Usuário</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="userForm">
+                    <input type="hidden" id="userId">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="userFullName">Nome Completo</label>
+                            <input type="text" id="userFullName" class="form-control" required>
+                        </div>
+                        <div class="form-col">
+                            <label for="userUsername">Nome de Usuário</label>
+                            <input type="text" id="userUsername" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label for="userPassword">Senha</label>
+                            <input type="password" id="userPassword" class="form-control" required>
+                        </div>
+                        <div class="form-col">
+                            <label for="userRole">Permissão</label>
+                            <select id="userRole" class="form-control" required>
+                                <option value="admin">Administrador</option>
+                                <option value="user">Usuário</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-cancel">Cancelar</button>
+                <button class="btn" id="saveUserBtn">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        const state = {
+            currentUser: null,
+            users: [
+                { id: 1, fullName: 'Administrador', username: 'admin', password: 'admin', role: 'admin', active: true }
+            ],
+            tools: [
+                { id: 1, name: 'Serra Circular', description: 'Serra circular de 7 polegadas', quantity: 5, minStock: 2, condition: 'nova' },
+                { id: 2, name: 'Furadeira', description: 'Furadeira de impacto 500W', quantity: 3, minStock: 1, condition: 'usada' },
+                { id: 3, name: 'Lixadeira', description: 'Lixadeira orbital 125mm', quantity: 2, minStock: 1, condition: 'danificada' }
+            ],
+            materials: [
+                { id: 1, name: 'MDF 15mm', description: 'Chapas de MDF 15mm', quantity: 50, minStock: 10, supplier: 'Madeireira Silva' },
+                { id: 2, name: 'Prego 2x28', description: 'Pregos galvanizados 2x28', quantity: 1000, minStock: 200, supplier: 'Ferreira Materiais' },
+                { id: 3, name: 'Verniz Marfim', description: 'Verniz marfim brilhante', quantity: 8, minStock: 3, supplier: 'Tintas & Cores' }
+            ],
+            products: [
+                { id: 1, name: 'Detergente', category: 'Limpeza', description: 'Detergente líquido', quantity: 5, minStock: 2, expiry: '2024-12-31' },
+                { id: 2, name: 'Luvas de Proteção', category: 'EPI', description: 'Luvas de proteção contra cortes', quantity: 10, minStock: 5, expiry: null },
+                { id: 3, name: 'Óleo Lubrificante', category: 'Manutenção', description: 'Óleo para lubrificação de ferramentas', quantity: 3, minStock: 1, expiry: '2025-06-30' }
+            ],
+            logs: [
+                { id: 1, timestamp: new Date().toISOString(), userId: 1, action: 'Login', item: 'Sistema', details: 'Usuário admin fez login' }
+            ],
+            assignments: []
+        };
+
+        // DOM Elements
+        const loginScreen = document.getElementById('loginScreen');
+        const app = document.getElementById('app');
+        const loginForm = document.getElementById('loginForm');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const navTabs = document.querySelectorAll('.nav-tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const userAvatar = document.getElementById('userAvatar');
+        const userName = document.getElementById('userName');
+
+        // Initialize the application
+        async function initApp() {
+            // Check if user is already logged in
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                state.currentUser = JSON.parse(savedUser);
+                showApp();
+            }
+
+            // Load data from Firebase (with localStorage fallback)
+            await loadFromFirebase();
+
+            // Set up event listeners
+            setupEventListeners();
+
+            // Render initial data
+            renderDashboard();
+            renderTools();
+            renderMaterials();
+            renderProducts();
+            renderLogs();
+            renderUsers();
+        }
+
+        // Load data from Firebase Firestore
+        async function loadFromFirebase() {
+            try {
+                // Check if Firebase is configured
+                if (!window.db) {
+                    console.log('Firebase not configured, using localStorage fallback');
+                    loadFromLocalStorage();
+                    return;
+                }
+
+                const docRef = doc(window.db, 'stock-control', 'data');
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.users) state.users = data.users;
+                    if (data.tools) state.tools = data.tools;
+                    if (data.materials) state.materials = data.materials;
+                    if (data.products) state.products = data.products;
+                    if (data.logs) state.logs = data.logs;
+                    if (data.assignments) state.assignments = data.assignments;
+                    console.log('Data loaded from Firebase');
+                } else {
+                    console.log('No Firebase data found, using defaults');
+                }
+            } catch (error) {
+                console.error('Error loading from Firebase:', error);
+                // Fallback to localStorage
+                loadFromLocalStorage();
+            }
+        }
+
+        // Load data from localStorage (fallback)
+        function loadFromLocalStorage() {
+            const savedUsers = localStorage.getItem('users');
+            const savedTools = localStorage.getItem('tools');
+            const savedMaterials = localStorage.getItem('materials');
+            const savedProducts = localStorage.getItem('products');
+            const savedLogs = localStorage.getItem('logs');
+            const savedAssignments = localStorage.getItem('assignments');
+
+            if (savedUsers) state.users = JSON.parse(savedUsers);
+            if (savedTools) state.tools = JSON.parse(savedTools);
+            if (savedMaterials) state.materials = JSON.parse(savedMaterials);
+            if (savedProducts) state.products = JSON.parse(savedProducts);
+            if (savedLogs) state.logs = JSON.parse(savedLogs);
+            if (savedAssignments) state.assignments = JSON.parse(savedAssignments);
+        }
+
+        // Save data to Firebase Firestore
+        async function saveToFirebase() {
+            try {
+                // Check if Firebase is configured
+                if (!window.db) {
+                    console.log('Firebase not configured, using localStorage fallback');
+                    saveToLocalStorage();
+                    return;
+                }
+
+                await setDoc(doc(window.db, 'stock-control', 'data'), {
+                    users: state.users,
+                    tools: state.tools,
+                    materials: state.materials,
+                    products: state.products,
+                    logs: state.logs,
+                    assignments: state.assignments,
+                    lastUpdated: new Date().toISOString()
+                });
+                console.log('Data saved to Firebase');
+            } catch (error) {
+                console.error('Error saving to Firebase:', error);
+                // Fallback to localStorage
+                saveToLocalStorage();
+            }
+        }
+
+        // Save data to localStorage (fallback)
+        function saveToLocalStorage() {
+            localStorage.setItem('users', JSON.stringify(state.users));
+            localStorage.setItem('tools', JSON.stringify(state.tools));
+            localStorage.setItem('materials', JSON.stringify(state.materials));
+            localStorage.setItem('products', JSON.stringify(state.products));
+            localStorage.setItem('logs', JSON.stringify(state.logs));
+            localStorage.setItem('assignments', JSON.stringify(state.assignments));
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Login form
+            loginForm.addEventListener('submit', handleLogin);
+
+            // Logout button
+            logoutBtn.addEventListener('click', handleLogout);
+
+            // Navigation tabs
+            navTabs.forEach(tab => {
+                tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+            });
+
+            // Tool buttons
+            document.getElementById('addToolBtn').addEventListener('click', () => openToolModal());
+            document.getElementById('saveToolBtn').addEventListener('click', saveTool);
+
+            // Material buttons
+            document.getElementById('addMaterialBtn').addEventListener('click', () => openMaterialModal());
+            document.getElementById('saveMaterialBtn').addEventListener('click', saveMaterial);
+
+            // Product buttons
+            document.getElementById('addProductBtn').addEventListener('click', () => openProductModal());
+            document.getElementById('saveProductBtn').addEventListener('click', saveProduct);
+
+            // User buttons
+            document.getElementById('addUserBtn').addEventListener('click', () => openUserModal());
+            document.getElementById('saveUserBtn').addEventListener('click', saveUser);
+
+            // AI Prediction button
+            document.getElementById('generatePredictionBtn').addEventListener('click', generatePredictions);
+
+            // Modal close buttons
+            document.querySelectorAll('.modal-close, .modal-cancel').forEach(btn => {
+                btn.addEventListener('click', closeModals);
+            });
+        }
+
+        // Handle login
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const user = state.users.find(u => 
+                u.username === username && u.password === password && u.active
+            );
+
+            if (user) {
+                state.currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                addLog('Login', 'Sistema', 'Usuário fez login');
+                showApp();
+            } else {
+                alert('Usuário ou senha inválidos!');
+            }
+        }
+
+        // Handle logout
+        function handleLogout() {
+            addLog('Logout', 'Sistema', 'Usuário fez logout');
+            state.currentUser = null;
+            localStorage.removeItem('currentUser');
+            showLogin();
+        }
+
+        // Show app
+        function showApp() {
+            loginScreen.classList.add('hidden');
+            app.classList.remove('hidden');
+            userAvatar.textContent = state.currentUser.fullName.charAt(0);
+            userName.textContent = state.currentUser.fullName;
+        }
+
+        // Show login
+        function showLogin() {
+            loginScreen.classList.remove('hidden');
+            app.classList.add('hidden');
+            loginForm.reset();
+        }
+
+        // Switch tabs
+        function switchTab(tabName) {
+            // Update active tab
+            navTabs.forEach(tab => {
+                if (tab.dataset.tab === tabName) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+
+            // Update active content
+            tabContents.forEach(content => {
+                if (content.id === tabName) {
+                    content.classList.add('active');
+                } else {
+                    content.classList.remove('active');
+                }
+            });
+
+            // Refresh tab content if needed
+            if (tabName === 'dashboard') {
+                renderDashboard();
+            } else if (tabName === 'tools') {
+                renderTools();
+            } else if (tabName === 'materials') {
+                renderMaterials();
+            } else if (tabName === 'products') {
+                renderProducts();
+            } else if (tabName === 'logs') {
+                renderLogs();
+            } else if (tabName === 'users') {
+                renderUsers();
+            }
+        }
+
+        // Add log entry
+        function addLog(action, item, details) {
+            const log = {
+                id: state.logs.length + 1,
+                timestamp: new Date().toISOString(),
+                userId: state.currentUser.id,
+                user: state.currentUser.fullName,
+                action,
+                item,
+                details
+            };
+            state.logs.unshift(log);
+            saveToFirebase();
+        }
+
+        // Render dashboard
+        function renderDashboard() {
+            // Update counts
+            document.getElementById('toolsCount').textContent = state.tools.length;
+            document.getElementById('materialsCount').textContent = state.materials.length;
+            document.getElementById('productsCount').textContent = state.products.length;
+
+            // Update low stock counts
+            const toolsLowStock = state.tools.filter(t => t.quantity <= t.minStock).length;
+            const materialsLowStock = state.materials.filter(m => m.quantity <= m.minStock).length;
+            const productsLowStock = state.products.filter(p => p.quantity <= p.minStock).length;
+
+            document.getElementById('toolsLowStock').textContent = toolsLowStock;
+            document.getElementById('materialsLowStock').textContent = materialsLowStock;
+            document.getElementById('productsLowStock').textContent = productsLowStock;
+
+            // Render chart
+            renderStockChart();
+        }
+
+        // Render stock chart
+        function renderStockChart() {
+            const ctx = document.getElementById('stockChart').getContext('2d');
+            
+            const toolsData = state.tools.map(t => t.quantity);
+            const materialsData = state.materials.map(m => m.quantity);
+            const productsData = state.products.map(p => p.quantity);
+            
+            const labels = [
+                ...state.tools.map(t => t.name),
+                ...state.materials.map(m => m.name),
+                ...state.products.map(p => p.name)
+            ];
+            
+            const backgroundColors = [
+                ...state.tools.map(() => 'rgba(54, 162, 235, 0.7)'),
+                ...state.materials.map(() => 'rgba(75, 192, 192, 0.7)'),
+                ...state.products.map(() => 'rgba(255, 159, 64, 0.7)')
+            ];
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Quantidade em Estoque',
+                        data: [...toolsData, ...materialsData, ...productsData],
+                        backgroundColor: backgroundColors,
+                        borderColor: backgroundColors.map(color => color.replace('0.7', '1')),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render tools
+        function renderTools() {
+            const tbody = document.getElementById('toolsTableBody');
+            tbody.innerHTML = '';
+
+            state.tools.forEach(tool => {
+                const row = document.createElement('tr');
+                const lowStock = tool.quantity <= tool.minStock;
+                
+                row.innerHTML = `
+                    <td>${tool.name}</td>
+                    <td>${tool.description}</td>
+                    <td>
+                        ${tool.quantity}
+                        ${lowStock ? '<span class="badge badge-warning">Estoque Baixo</span>' : ''}
+                    </td>
+                    <td><span class="badge ${getConditionBadgeClass(tool.condition)}">${tool.condition}</span></td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-secondary" onclick="editTool(${tool.id})">Editar</button>
+                        <button class="btn btn-sm" onclick="assignTool(${tool.id})">Atribuir</button>
+                        ${state.currentUser.role === 'admin' ? 
+                          `<button class="btn btn-sm btn-danger" onclick="deleteTool(${tool.id})">Excluir</button>` : ''}
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Get condition badge class
+        function getConditionBadgeClass(condition) {
+            switch(condition) {
+                case 'nova': return 'badge-success';
+                case 'usada': return 'badge-warning';
+                case 'danificada': return 'badge-danger';
+                default: return 'badge-info';
+            }
+        }
+
+        // Open tool modal
+        function openToolModal(toolId = null) {
+            const modal = document.getElementById('toolModal');
+            const title = document.getElementById('toolModalTitle');
+            const form = document.getElementById('toolForm');
+            
+            if (toolId) {
+                // Edit mode
+                const tool = state.tools.find(t => t.id === toolId);
+                if (tool) {
+                    document.getElementById('toolId').value = tool.id;
+                    document.getElementById('toolName').value = tool.name;
+                    document.getElementById('toolDescription').value = tool.description;
+                    document.getElementById('toolQuantity').value = tool.quantity;
+                    document.getElementById('toolCondition').value = tool.condition;
+                    document.getElementById('toolMinStock').value = tool.minStock;
+                    title.textContent = 'Editar Ferramenta';
+                }
+            } else {
+                // Add mode
+                form.reset();
+                document.getElementById('toolId').value = '';
+                title.textContent = 'Nova Ferramenta';
+            }
+            
+            modal.classList.remove('hidden');
+        }
+
+        // Save tool
+        function saveTool() {
+            const id = document.getElementById('toolId').value;
+            const name = document.getElementById('toolName').value;
+            const description = document.getElementById('toolDescription').value;
+            const quantity = parseInt(document.getElementById('toolQuantity').value);
+            const condition = document.getElementById('toolCondition').value;
+            const minStock = parseInt(document.getElementById('toolMinStock').value);
+
+            if (id) {
+                // Update existing tool
+                const toolIndex = state.tools.findIndex(t => t.id === parseInt(id));
+                if (toolIndex !== -1) {
+                    state.tools[toolIndex] = {
+                        ...state.tools[toolIndex],
+                        name,
+                        description,
+                        quantity,
+                        condition,
+                        minStock
+                    };
+                    addLog('Atualização', 'Ferramenta', `Ferramenta "${name}" atualizada`);
+                }
+            } else {
+                // Add new tool
+                const newId = state.tools.length > 0 ? Math.max(...state.tools.map(t => t.id)) + 1 : 1;
+                state.tools.push({
+                    id: newId,
+                    name,
+                    description,
+                    quantity,
+                    condition,
+                    minStock
+                });
+                addLog('Criação', 'Ferramenta', `Ferramenta "${name}" criada`);
+            }
+
+            saveToFirebase();
+            renderTools();
+            closeModals();
+        }
+
+        // Edit tool
+        function editTool(id) {
+            openToolModal(id);
+        }
+
+        // Delete tool
+        function deleteTool(id) {
+            if (confirm('Tem certeza que deseja excluir esta ferramenta?')) {
+                const tool = state.tools.find(t => t.id === id);
+                state.tools = state.tools.filter(t => t.id !== id);
+                addLog('Exclusão', 'Ferramenta', `Ferramenta "${tool.name}" excluída`);
+                saveToFirebase();
+                renderTools();
+            }
+        }
+
+        // Assign tool
+        function assignTool(id) {
+            const modal = document.getElementById('assignmentModal');
+            document.getElementById('assignmentToolId').value = id;
+            
+            // Populate users dropdown
+            const userSelect = document.getElementById('assignmentUser');
+            userSelect.innerHTML = '<option value="">Selecione um funcionário</option>';
+            
+            state.users
+                .filter(u => u.role === 'user' && u.active)
+                .forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.textContent = user.fullName;
+                    userSelect.appendChild(option);
+                });
+            
+            // Set today's date
+            document.getElementById('assignmentDate').valueAsDate = new Date();
+            
+            // Initialize signature pad
+            const canvas = document.getElementById('signaturePad');
+            const signaturePad = new SignaturePad(canvas);
+            
+            // Clear signature button
+            document.getElementById('clearSignature').addEventListener('click', () => {
+                signaturePad.clear();
+            });
+            
+            // Save assignment
+            document.getElementById('saveAssignmentBtn').onclick = () => {
+                const userId = document.getElementById('assignmentUser').value;
+                const date = document.getElementById('assignmentDate').value;
+                
+                if (!userId) {
+                    alert('Selecione um funcionário!');
+                    return;
+                }
+                
+                if (signaturePad.isEmpty()) {
+                    alert('É necessário uma assinatura!');
+                    return;
+                }
+                
+                const tool = state.tools.find(t => t.id === id);
+                const user = state.users.find(u => u.id === parseInt(userId));
+                
+                // Generate PDF receipt (simulated)
+                generateReceipt(tool, user, date, signaturePad.toDataURL());
+                
+                // Update tool quantity
+                const toolIndex = state.tools.findIndex(t => t.id === id);
+                if (toolIndex !== -1 && state.tools[toolIndex].quantity > 0) {
+                    state.tools[toolIndex].quantity--;
+                }
+                
+                // Add to assignments
+                const assignment = {
+                    id: state.assignments.length + 1,
+                    toolId: id,
+                    userId: parseInt(userId),
+                    date,
+                    signature: signaturePad.toDataURL()
+                };
+                state.assignments.push(assignment);
+                
+                addLog('Atribuição', 'Ferramenta', `Ferramenta "${tool.name}" atribuída a ${user.fullName}`);
+                saveToFirebase();
+                renderTools();
+                closeModals();
+                
+                alert('Cautela gerada com sucesso! A ferramenta foi atribuída.');
+            };
+            
+            modal.classList.remove('hidden');
+        }
+
+        // Generate receipt (simulated)
+        function generateReceipt(tool, user, date, signature) {
+            // In a real implementation, this would generate a PDF
+            console.log('Gerando cautela para:');
+            console.log('Ferramenta:', tool.name);
+            console.log('Funcionário:', user.fullName);
+            console.log('Data:', date);
+            console.log('Assinatura:', signature.substring(0, 50) + '...');
+            
+            // Simulate PDF generation
+            alert(`Cautela gerada para ${user.fullName} - ${tool.name}\n\nEm um sistema real, um PDF seria gerado e disponibilizado para download.`);
+        }
+
+        // Render materials
+        function renderMaterials() {
+            const tbody = document.getElementById('materialsTableBody');
+            tbody.innerHTML = '';
+
+            state.materials.forEach(material => {
+                const row = document.createElement('tr');
+                const lowStock = material.quantity <= material.minStock;
+                
+                row.innerHTML = `
+                    <td>${material.name}</td>
+                    <td>${material.description}</td>
+                    <td>
+                        ${material.quantity}
+                        ${lowStock ? '<span class="badge badge-warning">Estoque Baixo</span>' : ''}
+                    </td>
+                    <td>${material.supplier || '-'}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-secondary" onclick="editMaterial(${material.id})">Editar</button>
+                        <button class="btn btn-sm" onclick="adjustMaterialStock(${material.id}, 'in')">Entrada</button>
+                        <button class="btn btn-sm" onclick="adjustMaterialStock(${material.id}, 'out')">Saída</button>
+                        ${state.currentUser.role === 'admin' ? 
+                          `<button class="btn btn-sm btn-danger" onclick="deleteMaterial(${material.id})">Excluir</button>` : ''}
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Open material modal
+        function openMaterialModal(materialId = null) {
+            const modal = document.getElementById('materialModal');
+            const title = document.getElementById('materialModalTitle');
+            const form = document.getElementById('materialForm');
+            
+            if (materialId) {
+                // Edit mode
+                const material = state.materials.find(m => m.id === materialId);
+                if (material) {
+                    document.getElementById('materialId').value = material.id;
+                    document.getElementById('materialName').value = material.name;
+                    document.getElementById('materialDescription').value = material.description;
+                    document.getElementById('materialQuantity').value = material.quantity;
+                    document.getElementById('materialSupplier').value = material.supplier || '';
+                    document.getElementById('materialMinStock').value = material.minStock;
+                    title.textContent = 'Editar Material';
+                }
+            } else {
+                // Add mode
+                form.reset();
+                document.getElementById('materialId').value = '';
+                title.textContent = 'Novo Material';
+            }
+            
+            modal.classList.remove('hidden');
+        }
+
+        // Save material
+        function saveMaterial() {
+            const id = document.getElementById('materialId').value;
+            const name = document.getElementById('materialName').value;
+            const description = document.getElementById('materialDescription').value;
+            const quantity = parseInt(document.getElementById('materialQuantity').value);
+            const supplier = document.getElementById('materialSupplier').value;
+            const minStock = parseInt(document.getElementById('materialMinStock').value);
+
+            if (id) {
+                // Update existing material
+                const materialIndex = state.materials.findIndex(m => m.id === parseInt(id));
+                if (materialIndex !== -1) {
+                    state.materials[materialIndex] = {
+                        ...state.materials[materialIndex],
+                        name,
+                        description,
+                        quantity,
+                        supplier,
+                        minStock
+                    };
+                    addLog('Atualização', 'Material', `Material "${name}" atualizado`);
+                }
+            } else {
+                // Add new material
+                const newId = state.materials.length > 0 ? Math.max(...state.materials.map(m => m.id)) + 1 : 1;
+                state.materials.push({
+                    id: newId,
+                    name,
+                    description,
+                    quantity,
+                    supplier,
+                    minStock
+                });
+                addLog('Criação', 'Material', `Material "${name}" criado`);
+            }
+
+            saveToFirebase();
+            renderMaterials();
+            closeModals();
+        }
+
+        // Edit material
+        function editMaterial(id) {
+            openMaterialModal(id);
+        }
+
+        // Delete material
+        function deleteMaterial(id) {
+            if (confirm('Tem certeza que deseja excluir este material?')) {
+                const material = state.materials.find(m => m.id === id);
+                state.materials = state.materials.filter(m => m.id !== id);
+                addLog('Exclusão', 'Material', `Material "${material.name}" excluído`);
+                saveToFirebase();
+                renderMaterials();
+            }
+        }
+
+        // Adjust material stock
+        function adjustMaterialStock(id, type) {
+            const material = state.materials.find(m => m.id === id);
+            if (!material) return;
+            
+            const amount = prompt(`Quantidade para ${type === 'in' ? 'entrada' : 'saída'}:`, '1');
+            if (!amount || isNaN(amount) || parseInt(amount) <= 0) {
+                alert('Quantidade inválida!');
+                return;
+            }
+            
+            const quantity = parseInt(amount);
+            
+            if (type === 'in') {
+                material.quantity += quantity;
+                addLog('Entrada', 'Material', `${quantity} unidades de "${material.name}" adicionadas ao estoque`);
+            } else {
+                if (material.quantity < quantity) {
+                    alert('Quantidade insuficiente em estoque!');
+                    return;
+                }
+                material.quantity -= quantity;
+                addLog('Saída', 'Material', `${quantity} unidades de "${material.name}" removidas do estoque`);
+            }
+            
+            saveToFirebase();
+            renderMaterials();
+        }
+
+        // Render products
+        function renderProducts() {
+            const tbody = document.getElementById('productsTableBody');
+            tbody.innerHTML = '';
+
+            state.products.forEach(product => {
+                const row = document.createElement('tr');
+                const lowStock = product.quantity <= product.minStock;
+                const today = new Date();
+                const expiry = product.expiry ? new Date(product.expiry) : null;
+                const expired = expiry && expiry < today;
+                
+                row.innerHTML = `
+                    <td>${product.name}</td>
+                    <td>${product.category}</td>
+                    <td>
+                        ${product.quantity}
+                        ${lowStock ? '<span class="badge badge-warning">Estoque Baixo</span>' : ''}
+                    </td>
+                    <td>
+                        ${product.expiry ? 
+                          `<span class="${expired ? 'badge badge-danger' : ''}">${formatDate(product.expiry)}</span>` : 
+                          'Sem validade'}
+                    </td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-secondary" onclick="editProduct(${product.id})">Editar</button>
+                        <button class="btn btn-sm" onclick="adjustProductStock(${product.id}, 'in')">Entrada</button>
+                        <button class="btn btn-sm" onclick="adjustProductStock(${product.id}, 'out')">Saída</button>
+                        ${state.currentUser.role === 'admin' ? 
+                          `<button class="btn btn-sm btn-danger" onclick="deleteProduct(${product.id})">Excluir</button>` : ''}
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        // Open product modal
+        function openProductModal(productId = null) {
+            const modal = document.getElementById('productModal');
+            const title = document.getElementById('productModalTitle');
+            const form = document.getElementById('productForm');
+            
+            if (productId) {
+                // Edit mode
+                const product = state.products.find(p => p.id === productId);
+                if (product) {
+                    document.getElementById('productId').value = product.id;
+                    document.getElementById('productName').value = product.name;
+                    document.getElementById('productCategory').value = product.category;
+                    document.getElementById('productDescription').value = product.description;
+                    document.getElementById('productQuantity').value = product.quantity;
+                    document.getElementById('productExpiry').value = product.expiry || '';
+                    document.getElementById('productMinStock').value = product.minStock;
+                    title.textContent = 'Editar Produto';
+                }
+            } else {
+                // Add mode
+                form.reset();
+                document.getElementById('productId').value = '';
+                title.textContent = 'Novo Produto';
+            }
+            
+            modal.classList.remove('hidden');
+        }
+
+        // Save product
+        function saveProduct() {
+            const id = document.getElementById('productId').value;
+            const name = document.getElementById('productName').value;
+            const category = document.getElementById('productCategory').value;
+            const description = document.getElementById('productDescription').value;
+            const quantity = parseInt(document.getElementById('productQuantity').value);
+            const expiry = document.getElementById('productExpiry').value;
+            const minStock = parseInt(document.getElementById('productMinStock').value);
+
+            if (id) {
+                // Update existing product
+                const productIndex = state.products.findIndex(p => p.id === parseInt(id));
+                if (productIndex !== -1) {
+                    state.products[productIndex] = {
+                        ...state.products[productIndex],
+                        name,
+                        category,
+                        description,
+                        quantity,
+                        expiry: expiry || null,
+                        minStock
+                    };
+                    addLog('Atualização', 'Produto', `Produto "${name}" atualizado`);
+                }
+            } else {
+                // Add new product
+                const newId = state.products.length > 0 ? Math.max(...state.products.map(p => p.id)) + 1 : 1;
+                state.products.push({
+                    id: newId,
+                    name,
+                    category,
+                    description,
+                    quantity,
+                    expiry: expiry || null,
+                    minStock
+                });
+                addLog('Criação', 'Produto', `Produto "${name}" criado`);
+            }
+
+            saveToFirebase();
+            renderProducts();
+            closeModals();
+        }
+
+        // Edit product
+        function editProduct(id) {
+            openProductModal(id);
+        }
+
+        // Delete product
+        function deleteProduct(id) {
+            if (confirm('Tem certeza que deseja excluir este produto?')) {
+                const product = state.products.find(p => p.id === id);
+                state.products = state.products.filter(p => p.id !== id);
+                addLog('Exclusão', 'Produto', `Produto "${product.name}" excluído`);
+                saveToFirebase();
+                renderProducts();
+            }
+        }
+
+        // Adjust product stock
+        function adjustProductStock(id, type) {
+            const product = state.products.find(p => p.id === id);
+            if (!product) return;
+            
+            const amount = prompt(`Quantidade para ${type === 'in' ? 'entrada' : 'saída'}:`, '1');
+            if (!amount || isNaN(amount) || parseInt(amount) <= 0) {
+                alert('Quantidade inválida!');
+                return;
+            }
+            
+            const quantity = parseInt(amount);
+            
+            if (type === 'in') {
+                product.quantity += quantity;
+                addLog('Entrada', 'Produto', `${quantity} unidades de "${product.name}" adicionadas ao estoque`);
+            } else {
+                if (product.quantity < quantity) {
+                    alert('Quantidade insuficiente em estoque!');
+                    return;
+                }
+                product.quantity -= quantity;
+                addLog('Saída', 'Produto', `${quantity} unidades de "${product.name}" removidas do estoque`);
+            }
+            
+            saveToFirebase();
+            renderProducts();
+        }
+
+        // Render logs
+        function renderLogs() {
+            const tbody = document.getElementById('logsTableBody');
+            tbody.innerHTML = '';
+
+            // Populate user filter
+            const userFilter = document.getElementById('logUserFilter');
+            userFilter.innerHTML = '<option value="">Todos os usuários</option>';
+            
+            const uniqueUsers = [...new Set(state.logs.map(log => log.user))];
+            uniqueUsers.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user;
+                option.textContent = user;
+                userFilter.appendChild(option);
+            });
+
+            // Filter logs
+            const dateFilter = document.getElementById('logDateFilter').value;
+            const userFilterValue = userFilter.value;
+            
+            let filteredLogs = state.logs;
+            
+            if (dateFilter) {
+                filteredLogs = filteredLogs.filter(log => {
+                    const logDate = new Date(log.timestamp).toISOString().split('T')[0];
+                    return logDate === dateFilter;
+                });
+            }
+            
+            if (userFilterValue) {
+                filteredLogs = filteredLogs.filter(log => log.user === userFilterValue);
+            }
+
+            // Render logs
+            filteredLogs.forEach(log => {
+                const row = document.createElement('tr');
+                const date = new Date(log.timestamp);
+                
+                row.innerHTML = `
+                    <td>${date.toLocaleString('pt-BR')}</td>
+                    <td>${log.user}</td>
+                    <td>${log.action}</td>
+                    <td>${log.item}</td>
+                    <td>${log.details}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+
+            // Add event listeners for filters
+            document.getElementById('logDateFilter').addEventListener('change', renderLogs);
+            userFilter.addEventListener('change', renderLogs);
+        }
+
+        // Render users
+        function renderUsers() {
+            // Only admin can access users tab
+            if (state.currentUser.role !== 'admin') {
+                document.querySelector('[data-tab="users"]').style.display = 'none';
+                return;
+            }
+            
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+
+            state.users.forEach(user => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${user.fullName}</td>
+                    <td>${user.username}</td>
+                    <td><span class="badge ${user.role === 'admin' ? 'badge-success' : 'badge-info'}">${user.role}</span></td>
+                    <td><span class="badge ${user.active ? 'badge-success' : 'badge-danger'}">${user.active ? 'Ativo' : 'Inativo'}</span></td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-secondary" onclick="editUser(${user.id})">Editar</button>
+                        <button class="btn btn-sm ${user.active ? 'btn-warning' : 'btn-success'}" onclick="toggleUser(${user.id})">
+                            ${user.active ? 'Desativar' : 'Ativar'}
+                        </button>
+                        ${user.id !== state.currentUser.id ? 
+                          `<button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">Excluir</button>` : ''}
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Open user modal
+        function openUserModal(userId = null) {
+            const modal = document.getElementById('userModal');
+            const title = document.getElementById('userModalTitle');
+            const form = document.getElementById('userForm');
+            
+            if (userId) {
+                // Edit mode
+                const user = state.users.find(u => u.id === userId);
+                if (user) {
+                    document.getElementById('userId').value = user.id;
+                    document.getElementById('userFullName').value = user.fullName;
+                    document.getElementById('userUsername').value = user.username;
+                    document.getElementById('userPassword').value = user.password;
+                    document.getElementById('userRole').value = user.role;
+                    title.textContent = 'Editar Usuário';
+                }
+            } else {
+                // Add mode
+                form.reset();
+                document.getElementById('userId').value = '';
+                title.textContent = 'Novo Usuário';
+            }
+            
+            modal.classList.remove('hidden');
+        }
+
+        // Save user
+        function saveUser() {
+            const id = document.getElementById('userId').value;
+            const fullName = document.getElementById('userFullName').value;
+            const username = document.getElementById('userUsername').value;
+            const password = document.getElementById('userPassword').value;
+            const role = document.getElementById('userRole').value;
+
+            if (id) {
+                // Update existing user
+                const userIndex = state.users.findIndex(u => u.id === parseInt(id));
+                if (userIndex !== -1) {
+                    state.users[userIndex] = {
+                        ...state.users[userIndex],
+                        fullName,
+                        username,
+                        password,
+                        role
+                    };
+                    addLog('Atualização', 'Usuário', `Usuário "${fullName}" atualizado`);
+                }
+            } else {
+                // Add new user
+                const newId = state.users.length > 0 ? Math.max(...state.users.map(u => u.id)) + 1 : 1;
+                state.users.push({
+                    id: newId,
+                    fullName,
+                    username,
+                    password,
+                    role,
+                    active: true
+                });
+                addLog('Criação', 'Usuário', `Usuário "${fullName}" criado`);
+            }
+
+            saveToFirebase();
+            renderUsers();
+            closeModals();
+        }
+
+        // Edit user
+        function editUser(id) {
+            openUserModal(id);
+        }
+
+        // Toggle user active status
+        function toggleUser(id) {
+            const user = state.users.find(u => u.id === id);
+            if (user) {
+                user.active = !user.active;
+                addLog(user.active ? 'Ativação' : 'Desativação', 'Usuário', 
+                      `Usuário "${user.fullName}" ${user.active ? 'ativado' : 'desativado'}`);
+                saveToFirebase();
+                renderUsers();
+            }
+        }
+
+        // Delete user
+        function deleteUser(id) {
+            if (confirm('Tem certeza que deseja excluir este usuário?')) {
+                const user = state.users.find(u => u.id === id);
+                state.users = state.users.filter(u => u.id !== id);
+                addLog('Exclusão', 'Usuário', `Usuário "${user.fullName}" excluído`);
+                saveToFirebase();
+                renderUsers();
+            }
+        }
+
+        // Generate AI predictions
+        function generatePredictions() {
+            const resultsContainer = document.getElementById('predictionResults');
+            resultsContainer.innerHTML = '<p>Analisando dados e gerando previsões...</p>';
+            
+            // Simulate AI processing
+            setTimeout(() => {
+                // Simple prediction logic based on current stock and usage patterns
+                const predictions = [];
+                
+                // Check tools
+                state.tools.forEach(tool => {
+                    if (tool.quantity <= tool.minStock) {
+                        predictions.push({
+                            item: tool.name,
+                            type: 'Ferramenta',
+                            recommendation: `Repor ${tool.minStock * 2 - tool.quantity} unidades`,
+                            reason: `Estoque atual (${tool.quantity}) abaixo do mínimo (${tool.minStock})`
+                        });
+                    }
+                });
+                
+                // Check materials
+                state.materials.forEach(material => {
+                    if (material.quantity <= material.minStock) {
+                        predictions.push({
+                            item: material.name,
+                            type: 'Material',
+                            recommendation: `Comprar ${material.minStock * 3 - material.quantity} unidades`,
+                            reason: `Estoque baixo com tendência de alta demanda`
+                        });
+                    }
+                });
+                
+                // Check products
+                state.products.forEach(product => {
+                    if (product.quantity <= product.minStock) {
+                        predictions.push({
+                            item: product.name,
+                            type: 'Produto',
+                            recommendation: `Adquirir ${product.minStock * 2 - product.quantity} unidades`,
+                            reason: `Estoque insuficiente para operação contínua`
+                        });
+                    }
+                    
+                    // Check expiry
+                    if (product.expiry) {
+                        const expiryDate = new Date(product.expiry);
+                        const today = new Date();
+                        const diffTime = expiryDate - today;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        
+                        if (diffDays <= 30) {
+                            predictions.push({
+                                item: product.name,
+                                type: 'Produto',
+                                recommendation: `Usar ou substituir antes de ${formatDate(product.expiry)}`,
+                                reason: `Validade próxima (${diffDays} dias)`
+                            });
+                        }
+                    }
+                });
+                
+                // Display predictions
+                if (predictions.length === 0) {
+                    resultsContainer.innerHTML = `
+                        <div class="card">
+                            <div class="card-body">
+                                <h3>Previsões de Compras</h3>
+                                <p>Nenhuma necessidade crítica de compras identificada. O estoque atual está adequado.</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    let html = `
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Previsões de Compras com IA</h3>
+                            </div>
+                            <div class="card-body">
+                                <p>Baseado na análise do histórico e padrões de consumo, recomenda-se:</p>
+                                <div class="table-responsive">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Item</th>
+                                                <th>Tipo</th>
+                                                <th>Recomendação</th>
+                                                <th>Motivo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                    `;
+                    
+                    predictions.forEach(prediction => {
+                        html += `
+                            <tr>
+                                <td>${prediction.item}</td>
+                                <td>${prediction.type}</td>
+                                <td>${prediction.recommendation}</td>
+                                <td>${prediction.reason}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    resultsContainer.innerHTML = html;
+                }
+                
+                addLog('Geração', 'Previsão IA', 'Previsões de compras geradas');
+            }, 2000);
+        }
+
+        // Close all modals
+        function closeModals() {
+            document.querySelectorAll('.modal-overlay').forEach(modal => {
+                modal.classList.add('hidden');
+            });
+        }
+
+        // Initialize the app when the page loads
+        window.addEventListener('DOMContentLoaded', initApp);
+
+        // Make functions available globally for onclick handlers
+        window.editTool = editTool;
+        window.deleteTool = deleteTool;
+        window.assignTool = assignTool;
+        window.editMaterial = editMaterial;
+        window.deleteMaterial = deleteMaterial;
+        window.adjustMaterialStock = adjustMaterialStock;
+        window.editProduct = editProduct;
+        window.deleteProduct = deleteProduct;
+        window.adjustProductStock = adjustProductStock;
+        window.editUser = editUser;
+        window.toggleUser = toggleUser;
+        window.deleteUser = deleteUser;
+    </script>
+</body>
+</html>

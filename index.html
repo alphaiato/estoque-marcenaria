@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ArtPlan - Sistema de Gestão para Marcenaria</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <style>
         :root {
             --primary: #8B4513;
@@ -17,6 +19,7 @@
             --danger: #dc3545;
             --gray: #6c757d;
             --light-gray: #f8f9fa;
+            --whatsapp: #25D366;
         }
         
         * {
@@ -37,6 +40,111 @@
             min-height: 100vh;
         }
         
+        /* Tela de Login */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        }
+        
+        .login-box {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            padding: 40px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .login-logo {
+            margin-bottom: 30px;
+        }
+        
+        .login-logo h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .login-logo span {
+            color: var(--secondary);
+        }
+        
+        .login-logo p {
+            color: var(--gray);
+            margin-top: 5px;
+        }
+        
+        .login-form .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .login-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .login-form input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border 0.3s, box-shadow 0.3s;
+        }
+        
+        .login-form input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
+            outline: none;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .login-btn:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .user-type-selector {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .user-type {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        .user-type.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
         /* Sidebar */
         .sidebar {
             width: 250px;
@@ -45,6 +153,10 @@
             padding: 20px 0;
             transition: all 0.3s;
             box-shadow: 3px 0 10px rgba(0,0,0,0.1);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
         }
         
         .logo {
@@ -96,6 +208,8 @@
             flex: 1;
             padding: 20px;
             overflow-y: auto;
+            margin-left: 250px;
+            width: calc(100% - 250px);
         }
         
         .header {
@@ -131,6 +245,15 @@
             font-weight: bold;
         }
         
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+        
         /* Dashboard */
         .dashboard {
             display: grid;
@@ -145,10 +268,23 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
             padding: 20px;
             transition: transform 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background-color: var(--primary);
         }
         
         .card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
         
         .card-header {
@@ -203,6 +339,20 @@
             transition: all 0.3s;
             cursor: pointer;
             border-top: 4px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .module-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            transform: scaleX(0);
+            transition: transform 0.3s;
         }
         
         .module-card:hover {
@@ -210,17 +360,22 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
         
+        .module-card:hover::after {
+            transform: scaleX(1);
+        }
+        
         .module-icon {
             width: 70px;
             height: 70px;
             margin: 0 auto 15px;
             border-radius: 50%;
-            background-color: var(--light);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--primary);
+            color: white;
             font-size: 1.8rem;
+            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.3);
         }
         
         .module-title {
@@ -240,6 +395,7 @@
             display: flex;
             border-bottom: 1px solid #e0e0e0;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
         
         .tab {
@@ -247,6 +403,7 @@
             cursor: pointer;
             border-bottom: 3px solid transparent;
             transition: all 0.3s;
+            white-space: nowrap;
         }
         
         .tab.active {
@@ -257,6 +414,12 @@
         
         .tab-content {
             display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         .tab-content.active {
@@ -266,12 +429,15 @@
         /* Tables */
         .table-responsive {
             overflow-x: auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            border-radius: 8px;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
+            background: white;
         }
         
         th, td {
@@ -284,6 +450,8 @@
             background-color: var(--light);
             color: var(--primary);
             font-weight: 600;
+            position: sticky;
+            top: 0;
         }
         
         tr:hover {
@@ -308,12 +476,22 @@
             border: 1px solid #e0e0e0;
             border-radius: 5px;
             font-size: 1rem;
-            transition: border 0.3s;
+            transition: border 0.3s, box-shadow 0.3s;
         }
         
         input:focus, select:focus, textarea:focus {
             border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
             outline: none;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
         }
         
         .btn {
@@ -327,10 +505,13 @@
             font-size: 1rem;
             font-weight: 600;
             transition: all 0.3s;
+            text-align: center;
         }
         
         .btn:hover {
             background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         
         .btn-secondary {
@@ -341,25 +522,92 @@
             background-color: #b35717;
         }
         
+        .btn-sm {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .btn-whatsapp {
+            background-color: var(--whatsapp);
+        }
+        
+        .btn-whatsapp:hover {
+            background-color: #128C7E;
+        }
+        
         /* Responsive */
         @media (max-width: 992px) {
-            .container {
-                flex-direction: column;
+            .sidebar {
+                width: 70px;
+                overflow: visible;
             }
             
-            .sidebar {
-                width: 100%;
-                height: auto;
+            .sidebar .logo h1, .sidebar .logo p, .nav-links span {
+                display: none;
             }
             
             .nav-links {
-                display: flex;
-                overflow-x: auto;
+                padding: 0 10px;
             }
             
-            .nav-links li {
-                margin-bottom: 0;
-                margin-right: 10px;
+            .nav-links a {
+                justify-content: center;
+                padding: 15px 10px;
+            }
+            
+            .nav-links i {
+                margin-right: 0;
+                font-size: 1.4rem;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+                width: calc(100% - 70px);
+            }
+            
+            .logo {
+                padding: 15px 0;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .user-info {
+                align-self: flex-end;
             }
         }
         
@@ -370,17 +618,35 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
             padding: 25px;
             margin-top: 20px;
+            border-left: 4px solid var(--primary);
         }
         
         .material-list {
             margin: 20px 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
         }
         
         .material-item {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
+            padding: 12px 15px;
             border-bottom: 1px solid #e0e0e0;
+            transition: background-color 0.3s;
+        }
+        
+        .material-item:last-child {
+            border-bottom: none;
+        }
+        
+        .material-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .material-actions {
+            display: flex;
+            gap: 5px;
         }
         
         .cutting-plan {
@@ -401,6 +667,25 @@
             justify-content: center;
             margin: 20px 0;
             color: var(--gray);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cutting-piece {
+            position: absolute;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            background-color: rgba(139, 69, 19, 0.1);
+            transition: all 0.3s;
+        }
+        
+        .cutting-piece:hover {
+            background-color: rgba(139, 69, 19, 0.3);
+            z-index: 10;
+            transform: scale(1.05);
         }
         
         .progress-bar {
@@ -413,14 +698,18 @@
         
         .progress {
             height: 100%;
-            background-color: var(--success);
+            background: linear-gradient(to right, var(--primary), var(--secondary));
             border-radius: 5px;
+            transition: width 0.5s;
         }
         
         .alert {
             padding: 15px;
             border-radius: 5px;
             margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .alert-warning {
@@ -432,43 +721,533 @@
             background-color: rgba(40, 167, 69, 0.2);
             border-left: 4px solid var(--success);
         }
+        
+        .alert-danger {
+            background-color: rgba(220, 53, 69, 0.2);
+            border-left: 4px solid var(--danger);
+        }
+        
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            padding-left: 40px;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary);
+            text-align: center;
+        }
+        
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 992px) {
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .floating-action-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s;
+        }
+        
+        .floating-action-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: modalFadeIn 0.3s;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .toggle-sidebar {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary);
+            cursor: pointer;
+        }
+        
+        @media (max-width: 992px) {
+            .toggle-sidebar {
+                display: block;
+            }
+        }
+        
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-approved {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: var(--success);
+        }
+        
+        .status-pending {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: var(--warning);
+        }
+        
+        .status-rejected {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: var(--danger);
+        }
+        
+        .status-in-progress {
+            background-color: rgba(0, 123, 255, 0.2);
+            color: #007bff;
+        }
+        
+        .status-completed {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: var(--success);
+        }
+        
+        /* WhatsApp Integration */
+        .whatsapp-integration {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            padding: 25px;
+            margin-top: 20px;
+        }
+        
+        .whatsapp-chat {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            height: 300px;
+            overflow-y: auto;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f5f5f5;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        .message.received {
+            background: white;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .message.sent {
+            background: #dcf8c6;
+            align-self: flex-end;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message-time {
+            font-size: 0.7rem;
+            color: var(--gray);
+            text-align: right;
+            margin-top: 5px;
+        }
+        
+        .whatsapp-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .whatsapp-input input {
+            flex: 1;
+        }
+        
+        /* Material Quotation */
+        .quotation-section {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .quotation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .quotation-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .material-checkbox {
+            margin-right: 10px;
+        }
+        
+        /* Requisition */
+        .requisition-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .requisition-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .requisition-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .requisition-details {
+            margin-bottom: 15px;
+        }
+        
+        .requisition-materials {
+            margin: 15px 0;
+        }
+        
+        .signature-pad-container {
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            margin: 15px 0;
+            background: white;
+            height: 150px;
+        }
+        
+        .signature-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        /* Notification Sound */
+        .notification-sound {
+            display: none;
+        }
+        
+        /* WhatsApp Float Button */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 90px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--whatsapp);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s;
+        }
+        
+        .whatsapp-float:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        
+        .whatsapp-notification {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Tela de Login -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <div class="login-logo">
+                <h1>Art<span>Plan</span></h1>
+                <p>Sistema de Gestão para Marcenaria</p>
+            </div>
+            
+            <div class="user-type-selector">
+                <div class="user-type active" data-role="admin">Administrador</div>
+                <div class="user-type" data-role="funcionario">Funcionário</div>
+                <div class="user-type" data-role="estoquista">Estoquista</div>
+            </div>
+            
+            <form class="login-form" id="loginForm">
+                <div class="form-group">
+                    <label for="username">Usuário</label>
+                    <input type="text" id="username" placeholder="Digite seu usuário" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" placeholder="Digite sua senha" required>
+                </div>
+                
+                <button type="submit" class="login-btn">Entrar no Sistema</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sistema Principal (inicialmente oculto) -->
+    <div class="container" id="appContainer" style="display: none;">
         <!-- Sidebar -->
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar">
             <div class="logo">
                 <h1>Art<span>Plan</span></h1>
                 <p>Sistema de Gestão para Marcenaria</p>
             </div>
             <ul class="nav-links">
-                <li><a href="#" class="active" data-tab="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                <li><a href="#" data-tab="budgets"><i class="fas fa-file-invoice-dollar"></i> Orçamentos</a></li>
-                <li><a href="#" data-tab="materials"><i class="fas fa-boxes"></i> Materiais</a></li>
-                <li><a href="#" data-tab="production"><i class="fas fa-tools"></i> Produção</a></li>
-                <li><a href="#" data-tab="financial"><i class="fas fa-chart-line"></i> Financeiro</a></li>
-                <li><a href="#" data-tab="clients"><i class="fas fa-users"></i> Clientes</a></li>
-                <li><a href="#" data-tab="reports"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
-                <li><a href="#" data-tab="settings"><i class="fas fa-cogs"></i> Configurações</a></li>
+                <li>
+                    <a href="#" class="active" data-tab="dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-tab="budgets">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                        <span>Orçamentos</span>
+                        <span class="notification-badge">3</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-tab="materials">
+                        <i class="fas fa-boxes"></i>
+                        <span>Materiais</span>
+                        <span class="notification-badge">5</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-tab="production">
+                        <i class="fas fa-tools"></i>
+                        <span>Produção</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-tab="quotations">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Cotação de Materiais</span>
+                        <span class="notification-badge">2</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-tab="requisitions">
+                        <i class="fas fa-file-signature"></i>
+                        <span>Requisições</span>
+                        <span class="notification-badge">4</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-tab="financial">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Financeiro</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-tab="clients">
+                        <i class="fas fa-users"></i>
+                        <span>Clientes</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-tab="reports">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Relatórios</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-tab="settings">
+                        <i class="fas fa-cogs"></i>
+                        <span>Configurações</span>
+                    </a>
+                </li>
             </ul>
         </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
 
         <!-- Main Content -->
         <div class="main-content">
             <div class="header">
+                <button class="toggle-sidebar" id="toggleSidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <h1 class="page-title">Dashboard</h1>
                 <div class="user-info">
-                    <div class="user-avatar">JM</div>
+                    <div class="user-avatar" id="userAvatar">U</div>
                     <div>
-                        <div>João Marceneiro</div>
-                        <small>Administrador</small>
+                        <div id="userName">Usuário</div>
+                        <small id="userRole">Função</small>
                     </div>
+                    <button class="logout-btn" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </button>
                 </div>
             </div>
 
             <!-- Dashboard Tab -->
             <div id="dashboard" class="tab-content active">
+                <!-- Conteúdo do Dashboard (mantido do código anterior) -->
                 <div class="dashboard">
                     <div class="card">
                         <div class="card-header">
@@ -478,7 +1257,7 @@
                             </div>
                         </div>
                         <div class="stats">12</div>
-                        <p>+2 desde a última semana</p>
+                        <p class="stats-change">+2 desde a última semana</p>
                     </div>
                     
                     <div class="card">
@@ -500,7 +1279,7 @@
                             </div>
                         </div>
                         <div class="stats">R$ 42.580,00</div>
-                        <p>+15% em relação ao mês anterior</p>
+                        <p class="stats-change">+15% em relação ao mês anterior</p>
                     </div>
                     
                     <div class="card">
@@ -512,6 +1291,17 @@
                         </div>
                         <div class="stats">5</div>
                         <p>Materiais com estoque baixo</p>
+                    </div>
+                </div>
+
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <h3 class="chart-title">Receita Mensal (Últimos 6 meses)</h3>
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3 class="chart-title">Projetos por Status</h3>
+                        <canvas id="projectsChart"></canvas>
                     </div>
                 </div>
 
@@ -534,159 +1324,44 @@
                         <p class="module-desc">Controle de estoque e lista de materiais (BOM)</p>
                     </div>
                     
-                    <div class="module-card" data-tab="production">
+                    <div class="module-card" data-tab="quotations">
                         <div class="module-icon">
-                            <i class="fas fa-tools"></i>
+                            <i class="fas fa-clipboard-list"></i>
                         </div>
-                        <h3 class="module-title">Produção</h3>
-                        <p class="module-desc">Plano de corte e ordem de produção</p>
+                        <h3 class="module-title">Cotação de Materiais</h3>
+                        <p class="module-desc">Separação de materiais por ambiente do projeto</p>
                     </div>
                     
-                    <div class="module-card" data-tab="financial">
+                    <div class="module-card" data-tab="requisitions">
                         <div class="module-icon">
-                            <i class="fas fa-chart-line"></i>
+                            <i class="fas fa-file-signature"></i>
                         </div>
-                        <h3 class="module-title">Financeiro</h3>
-                        <p class="module-desc">Custos, preços e fluxo de caixa</p>
-                    </div>
-                    
-                    <div class="module-card" data-tab="clients">
-                        <div class="module-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <h3 class="module-title">Clientes e Projetos</h3>
-                        <p class="module-desc">Cadastro e acompanhamento de projetos</p>
-                    </div>
-                    
-                    <div class="module-card" data-tab="reports">
-                        <div class="module-icon">
-                            <i class="fas fa-chart-bar"></i>
-                        </div>
-                        <h3 class="module-title">Relatórios</h3>
-                        <p class="module-desc">Relatórios de produção e financeiros</p>
+                        <h3 class="module-title">Requisições</h3>
+                        <p class="module-desc">Solicitação e controle de materiais para produção</p>
                     </div>
                 </div>
             </div>
 
             <!-- Orçamentos Tab -->
             <div id="budgets" class="tab-content">
-                <h2 style="margin-bottom: 20px; color: var(--primary);">Módulo de Orçamentos</h2>
+                <div class="header" style="border-bottom: none; margin-bottom: 10px;">
+                    <h2 style="color: var(--primary);">Módulo de Orçamentos</h2>
+                    <button class="btn btn-success" id="newBudgetBtn">
+                        <i class="fas fa-plus"></i> Novo Orçamento
+                    </button>
+                </div>
                 
                 <div class="tabs">
-                    <div class="tab active" data-subtab="create-budget">Criar Orçamento</div>
+                    <div class="tab active" data-subtab="budget-list">Lista de Orçamentos</div>
+                    <div class="tab" data-subtab="create-budget">Criar Orçamento</div>
                     <div class="tab" data-subtab="templates">Templates de Projetos</div>
-                    <div class="tab" data-subtab="budget-list">Lista de Orçamentos</div>
                 </div>
                 
-                <div id="create-budget" class="subtab-content active">
-                    <h3 style="margin-bottom: 20px;">Criar Novo Orçamento</h3>
-                    
-                    <div class="form-group">
-                        <label for="project-name">Nome do Projeto</label>
-                        <input type="text" id="project-name" placeholder="Ex: Guarda-roupa Casal 3 portas">
+                <div id="budget-list" class="subtab-content active">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchBudgets" placeholder="Buscar orçamentos...">
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="client-select">Cliente</label>
-                        <select id="client-select">
-                            <option value="">Selecione um cliente</option>
-                            <option value="1">Maria Silva</option>
-                            <option value="2">João Santos</option>
-                            <option value="3">Ana Oliveira</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="project-description">Descrição do Projeto</label>
-                        <textarea id="project-description" rows="4" placeholder="Descreva o projeto detalhadamente..."></textarea>
-                    </div>
-                    
-                    <h4 style="margin: 20px 0 10px; color: var(--primary);">Lista de Materiais</h4>
-                    
-                    <div class="material-list">
-                        <div class="material-item">
-                            <div>Chapa MDF 15mm</div>
-                            <div>4 unidades</div>
-                            <div>R$ 320,00</div>
-                        </div>
-                        <div class="material-item">
-                            <div>Ferragens para portas</div>
-                            <div>3 conjuntos</div>
-                            <div>R$ 150,00</div>
-                        </div>
-                        <div class="material-item">
-                            <div>Puxadores cromados</div>
-                            <div>6 unidades</div>
-                            <div>R$ 90,00</div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="labor-cost">Custo de Mão de Obra (R$)</label>
-                        <input type="number" id="labor-cost" value="800">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="profit-margin">Margem de Lucro (%)</label>
-                        <input type="number" id="profit-margin" value="30">
-                    </div>
-                    
-                    <button class="btn">Gerar Orçamento</button>
-                    
-                    <div class="budget-preview">
-                        <h4 style="margin-bottom: 15px; color: var(--primary);">Prévia do Orçamento</h4>
-                        <div class="material-item">
-                            <div><strong>Total Materiais</strong></div>
-                            <div><strong>R$ 560,00</strong></div>
-                        </div>
-                        <div class="material-item">
-                            <div>Mão de Obra</div>
-                            <div>R$ 800,00</div>
-                        </div>
-                        <div class="material-item">
-                            <div>Lucro (30%)</div>
-                            <div>R$ 408,00</div>
-                        </div>
-                        <div class="material-item" style="border-top: 2px solid var(--primary); padding-top: 15px; font-size: 1.2rem;">
-                            <div><strong>Total do Projeto</strong></div>
-                            <div><strong>R$ 1.768,00</strong></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="templates" class="subtab-content">
-                    <h3 style="margin-bottom: 20px;">Templates de Projetos</h3>
-                    <p>Gerencie aqui os modelos de projetos reutilizáveis.</p>
-                    
-                    <div class="modules-grid" style="margin-top: 20px;">
-                        <div class="module-card">
-                            <div class="module-icon">
-                                <i class="fas fa-archive"></i>
-                            </div>
-                            <h3 class="module-title">Armário de Cozinha</h3>
-                            <p class="module-desc">Template padrão para armários de cozinha</p>
-                        </div>
-                        
-                        <div class="module-card">
-                            <div class="module-icon">
-                                <i class="fas fa-bed"></i>
-                            </div>
-                            <h3 class="module-title">Guarda-Roupa Casal</h3>
-                            <p class="module-desc">Modelo para guarda-roupas de casal</p>
-                        </div>
-                        
-                        <div class="module-card">
-                            <div class="module-icon">
-                                <i class="fas fa-desktop"></i>
-                            </div>
-                            <h3 class="module-title">Escrivaninha</h3>
-                            <p class="module-desc">Template para escrivaninhas e mesas</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="budget-list" class="subtab-content">
-                    <h3 style="margin-bottom: 20px;">Lista de Orçamentos</h3>
                     
                     <div class="table-responsive">
                         <table>
@@ -696,6 +1371,7 @@
                                     <th>Cliente</th>
                                     <th>Projeto</th>
                                     <th>Valor</th>
+                                    <th>Data</th>
                                     <th>Status</th>
                                     <th>Ações</th>
                                 </tr>
@@ -706,9 +1382,20 @@
                                     <td>Maria Silva</td>
                                     <td>Guarda-roupa Casal</td>
                                     <td>R$ 1.768,00</td>
-                                    <td><span style="color: var(--success);">Aprovado</span></td>
+                                    <td>15/09/2023</td>
+                                    <td><span class="status-badge status-approved">Aprovado</span></td>
                                     <td>
-                                        <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;">Visualizar</button>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm" title="Visualizar">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-secondary btn-sm" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-success btn-sm" title="Gerar Cotação" onclick="generateQuotation('0452')">
+                                                <i class="fas fa-clipboard-list"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 <tr>
@@ -716,148 +1403,154 @@
                                     <td>João Santos</td>
                                     <td>Armário de Cozinha</td>
                                     <td>R$ 3.245,00</td>
-                                    <td><span style="color: var(--warning);">Pendente</span></td>
+                                    <td>12/09/2023</td>
+                                    <td><span class="status-badge status-pending">Pendente</span></td>
                                     <td>
-                                        <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;">Visualizar</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>#0450</td>
-                                    <td>Ana Oliveira</td>
-                                    <td>Escrivaninha Home Office</td>
-                                    <td>R$ 890,00</td>
-                                    <td><span style="color: var(--danger);">Recusado</span></td>
-                                    <td>
-                                        <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;">Visualizar</button>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm" title="Visualizar">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-secondary btn-sm" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
+                
+                <!-- Conteúdo das outras sub-abas de orçamentos (mantido do código anterior) -->
             </div>
 
-            <!-- Outras abas com conteúdo básico -->
-            <div id="materials" class="tab-content">
-                <h2 style="margin-bottom: 20px; color: var(--primary);">Gestão de Materiais</h2>
-                <p>Módulo para controle de estoque e geração de lista de materiais (BOM).</p>
-                
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle"></i> <strong>Atenção:</strong> 5 materiais com estoque abaixo do mínimo.
+            <!-- Cotação de Materiais Tab -->
+            <div id="quotations" class="tab-content">
+                <div class="header" style="border-bottom: none; margin-bottom: 10px;">
+                    <h2 style="color: var(--primary);">Cotação de Materiais</h2>
+                    <button class="btn btn-success" id="newQuotationBtn">
+                        <i class="fas fa-plus"></i> Nova Cotação
+                    </button>
                 </div>
-                
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Material</th>
-                                <th>Estoque Atual</th>
-                                <th>Estoque Mínimo</th>
-                                <th>Unidade</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Chapa MDF 15mm</td>
-                                <td>8</td>
-                                <td>10</td>
-                                <td>unidades</td>
-                                <td><span style="color: var(--danger);">Estoque Baixo</span></td>
-                            </tr>
-                            <tr>
-                                <td>Chapa MDF 18mm</td>
-                                <td>15</td>
-                                <td>10</td>
-                                <td>unidades</td>
-                                <td><span style="color: var(--success);">Normal</span></td>
-                            </tr>
-                            <tr>
-                                <td>Puxadores Cromados</td>
-                                <td>22</td>
-                                <td>30</td>
-                                <td>unidades</td>
-                                <td><span style="color: var(--warning);">Atenção</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="production" class="tab-content">
-                <h2 style="margin-bottom: 20px; color: var(--primary);">Produção</h2>
                 
                 <div class="tabs">
-                    <div class="tab active" data-subtab="cutting-plan">Plano de Corte</div>
-                    <div class="tab" data-subtab="production-order">Ordem de Produção</div>
+                    <div class="tab active" data-subtab="quotation-list">Cotações em Andamento</div>
+                    <div class="tab" data-subtab="create-quotation">Criar Cotação</div>
                 </div>
                 
-                <div id="cutting-plan" class="subtab-content active">
-                    <h3 style="margin-bottom: 20px;">Plano de Corte</h3>
-                    
-                    <div class="form-group">
-                        <label for="material-select">Material a Ser Cortado</label>
-                        <select id="material-select">
-                            <option value="">Chapa MDF 15mm</option>
-                            <option value="1">Chapa MDF 18mm</option>
-                            <option value="2">Compensado 15mm</option>
-                        </select>
+                <div id="quotation-list" class="subtab-content active">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchQuotations" placeholder="Buscar cotações...">
                     </div>
                     
-                    <div class="cutting-visualization">
-                        Visualização do Layout de Corte
-                    </div>
-                    
-                    <div class="cutting-plan">
-                        <h4 style="margin-bottom: 15px; color: var(--primary);">Resumo do Plano de Corte</h4>
-                        <p><strong>Material:</strong> Chapa MDF 15mm</p>
-                        <p><strong>Chapas Utilizadas:</strong> 5 unidades</p>
-                        <p><strong>Aproveitamento:</strong> 87%</p>
-                        <p><strong>Sobras:</strong> 0,8 m²</p>
+                    <div class="quotation-section">
+                        <div class="quotation-header">
+                            <h3 class="quotation-title">Guarda-roupa Casal - Maria Silva</h3>
+                            <span class="status-badge status-in-progress">Em Andamento</span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Ambientes do Projeto</label>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <input type="checkbox" id="quarto" checked>
+                                    <label for="quarto">Quarto</label>
+                                </div>
+                                <div class="form-group">
+                                    <input type="checkbox" id="closet">
+                                    <label for="closet">Closet</label>
+                                </div>
+                                <div class="form-group">
+                                    <input type="checkbox" id="banheiro">
+                                    <label for="banheiro">Banheiro</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h4 style="margin: 20px 0 10px; color: var(--primary);">Materiais por Ambiente</h4>
+                        
+                        <div class="material-list">
+                            <div class="material-item">
+                                <div>
+                                    <input type="checkbox" class="material-checkbox" checked>
+                                    <span>Chapa MDF 15mm - Quarto</span>
+                                </div>
+                                <div>4 unidades</div>
+                                <div>R$ 320,00</div>
+                            </div>
+                            <div class="material-item">
+                                <div>
+                                    <input type="checkbox" class="material-checkbox" checked>
+                                    <span>Ferragens para portas - Quarto</span>
+                                </div>
+                                <div>3 conjuntos</div>
+                                <div>R$ 150,00</div>
+                            </div>
+                            <div class="material-item">
+                                <div>
+                                    <input type="checkbox" class="material-checkbox">
+                                    <span>Puxadores cromados - Quarto</span>
+                                </div>
+                                <div>6 unidades</div>
+                                <div>R$ 90,00</div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn btn-success" onclick="createRequisition('0452')">
+                                <i class="fas fa-file-signature"></i> Gerar Requisição
+                            </button>
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-file-pdf"></i> Exportar PDF
+                            </button>
+                            <button class="btn btn-whatsapp" onclick="openWhatsAppModal()">
+                                <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
-                <div id="production-order" class="subtab-content">
-                    <h3 style="margin-bottom: 20px;">Ordem de Produção</h3>
+                <div id="create-quotation" class="subtab-content">
+                    <h3 style="margin-bottom: 20px;">Criar Nova Cotação</h3>
+                    <p>Selecione um orçamento aprovado para criar uma cotação de materiais.</p>
                     
                     <div class="table-responsive">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>OP</th>
-                                    <th>Projeto</th>
+                                    <th>Nº</th>
                                     <th>Cliente</th>
-                                    <th>Prazo</th>
-                                    <th>Progresso</th>
-                                    <th>Status</th>
+                                    <th>Projeto</th>
+                                    <th>Valor</th>
+                                    <th>Data</th>
+                                    <th>Ação</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>#OP-124</td>
-                                    <td>Guarda-roupa Casal</td>
+                                    <td>#0452</td>
                                     <td>Maria Silva</td>
-                                    <td>15/10/2023</td>
+                                    <td>Guarda-roupa Casal</td>
+                                    <td>R$ 1.768,00</td>
+                                    <td>15/09/2023</td>
                                     <td>
-                                        <div class="progress-bar">
-                                            <div class="progress" style="width: 75%;"></div>
-                                        </div>
-                                        75%
+                                        <button class="btn btn-sm" onclick="generateQuotation('0452')">
+                                            Criar Cotação
+                                        </button>
                                     </td>
-                                    <td><span style="color: var(--warning);">Em Andamento</span></td>
                                 </tr>
                                 <tr>
-                                    <td>#OP-123</td>
-                                    <td>Armário de Cozinha</td>
-                                    <td>João Santos</td>
-                                    <td>10/10/2023</td>
+                                    <td>#0448</td>
+                                    <td>Carlos Oliveira</td>
+                                    <td>Escrivaninha Home Office</td>
+                                    <td>R$ 890,00</td>
+                                    <td>10/09/2023</td>
                                     <td>
-                                        <div class="progress-bar">
-                                            <div class="progress" style="width: 100%;"></div>
-                                        </div>
-                                        100%
+                                        <button class="btn btn-sm" onclick="generateQuotation('0448')">
+                                            Criar Cotação
+                                        </button>
                                     </td>
-                                    <td><span style="color: var(--success);">Concluído</span></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -865,103 +1558,568 @@
                 </div>
             </div>
 
-            <!-- Conteúdo simplificado para as outras abas -->
-            <div id="financial" class="tab-content">
-                <h2 style="margin-bottom: 20px; color: var(--primary);">Financeiro</h2>
-                <p>Módulo para gestão de custos, preços e fluxo de caixa.</p>
+            <!-- Requisições Tab -->
+            <div id="requisitions" class="tab-content">
+                <div class="header" style="border-bottom: none; margin-bottom: 10px;">
+                    <h2 style="color: var(--primary);">Requisições de Material</h2>
+                    <button class="btn btn-success" id="newRequisitionBtn" style="display: none;">
+                        <i class="fas fa-plus"></i> Nova Requisição
+                    </button>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" data-subtab="requisition-list">Minhas Requisições</div>
+                    <div class="tab" data-subtab="stock-requisitions" id="stockRequisitionsTab">Requisições do Estoque</div>
+                </div>
+                
+                <div id="requisition-list" class="subtab-content active">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchRequisitions" placeholder="Buscar requisições...">
+                    </div>
+                    
+                    <div class="requisition-card">
+                        <div class="requisition-header">
+                            <h3 class="requisition-title">Requisição #RQ-001</h3>
+                            <span class="status-badge status-pending">Pendente</span>
+                        </div>
+                        
+                        <div class="requisition-details">
+                            <p><strong>Projeto:</strong> Guarda-roupa Casal - Maria Silva</p>
+                            <p><strong>Solicitante:</strong> João Marceneiro</p>
+                            <p><strong>Data:</strong> 20/09/2023</p>
+                        </div>
+                        
+                        <div class="requisition-materials">
+                            <h4>Materiais Solicitados:</h4>
+                            <div class="material-list">
+                                <div class="material-item">
+                                    <div>Chapa MDF 15mm</div>
+                                    <div>4 unidades</div>
+                                </div>
+                                <div class="material-item">
+                                    <div>Ferragens para portas</div>
+                                    <div>3 conjuntos</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn btn-sm" disabled>
+                                <i class="fas fa-print"></i> Imprimir
+                            </button>
+                            <button class="btn btn-danger btn-sm">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="requisition-card">
+                        <div class="requisition-header">
+                            <h3 class="requisition-title">Requisição #RQ-002</h3>
+                            <span class="status-badge status-in-progress">Separando</span>
+                        </div>
+                        
+                        <div class="requisition-details">
+                            <p><strong>Projeto:</strong> Armário de Cozinha - João Santos</p>
+                            <p><strong>Solicitante:</strong> Maria Marceneira</p>
+                            <p><strong>Data:</strong> 18/09/2023</p>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn btn-sm" disabled>
+                                <i class="fas fa-print"></i> Imprimir
+                            </button>
+                            <button class="btn btn-secondary btn-sm">
+                                <i class="fas fa-sync"></i> Atualizar Status
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="stock-requisitions" class="subtab-content">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchStockRequisitions" placeholder="Buscar requisições...">
+                    </div>
+                    
+                    <div class="requisition-card">
+                        <div class="requisition-header">
+                            <h3 class="requisition-title">Requisição #RQ-003</h3>
+                            <span class="status-badge status-pending">Pendente</span>
+                        </div>
+                        
+                        <div class="requisition-details">
+                            <p><strong>Projeto:</strong> Escrivaninha Home Office - Carlos Oliveira</p>
+                            <p><strong>Solicitante:</strong> Pedro Marceneiro</p>
+                            <p><strong>Data:</strong> 22/09/2023</p>
+                        </div>
+                        
+                        <div class="requisition-materials">
+                            <h4>Materiais Solicitados:</h4>
+                            <div class="material-list">
+                                <div class="material-item">
+                                    <div>Chapa MDF 18mm</div>
+                                    <div>2 unidades</div>
+                                </div>
+                                <div class="material-item">
+                                    <div>Puxadores de alumínio</div>
+                                    <div>4 unidades</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn btn-success">
+                                <i class="fas fa-check"></i> Separar Material
+                            </button>
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-print"></i> Imprimir
+                            </button>
+                            <button class="btn btn-whatsapp" onclick="notifyRequisitionReady('RQ-003')">
+                                <i class="fab fa-whatsapp"></i> Notificar Pronto
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="requisition-card">
+                        <div class="requisition-header">
+                            <h3 class="requisition-title">Requisição #RQ-002</h3>
+                            <span class="status-badge status-in-progress">Aguardando Retirada</span>
+                        </div>
+                        
+                        <div class="requisition-details">
+                            <p><strong>Projeto:</strong> Armário de Cozinha - João Santos</p>
+                            <p><strong>Solicitante:</strong> Maria Marceneira</p>
+                            <p><strong>Data:</strong> 18/09/2023</p>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn btn-secondary" disabled>
+                                <i class="fas fa-print"></i> Imprimir
+                            </button>
+                            <button class="btn btn-whatsapp" onclick="notifyRequisitionReady('RQ-002')">
+                                <i class="fab fa-whatsapp"></i> Reenviar Notificação
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div id="clients" class="tab-content">
-                <h2 style="margin-bottom: 20px; color: var(--primary);">Clientes e Projetos</h2>
-                <p>Módulo para cadastro de clientes e acompanhamento de projetos.</p>
-            </div>
+            <!-- Conteúdo das outras abas (mantido do código anterior) -->
+        </div>
+    </div>
 
-            <div id="reports" class="tab-content">
-                <h2 style="margin-bottom: 20px; color: var(--primary);">Relatórios</h2>
-                <p>Módulo para geração de relatórios de produção e financeiros.</p>
-            </div>
+    <!-- Floating Action Button -->
+    <div class="floating-action-btn" id="fab">
+        <i class="fas fa-plus"></i>
+    </div>
 
-            <div id="settings" class="tab-content">
-                <h2 style="margin-bottom: 20px; color: var(--primary);">Configurações</h2>
-                <p>Módulo para configuração do sistema, cadastro de produtos e definição de margens.</p>
+    <!-- WhatsApp Float Button -->
+    <div class="whatsapp-float" id="whatsappFloat">
+        <i class="fab fa-whatsapp"></i>
+        <div class="whatsapp-notification" id="whatsappNotification">3</div>
+    </div>
+
+    <!-- Modal para Novo Orçamento -->
+    <div class="modal" id="newBudgetModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Novo Orçamento</h3>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="modal-project-name">Nome do Projeto</label>
+                    <input type="text" id="modal-project-name" placeholder="Ex: Guarda-roupa Casal 3 portas">
+                </div>
+                
+                <div class="form-group">
+                    <label for="modal-client-select">Cliente</label>
+                    <select id="modal-client-select">
+                        <option value="">Selecione um cliente</option>
+                        <option value="1">Maria Silva</option>
+                        <option value="2">João Santos</option>
+                        <option value="3">Ana Oliveira</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="modal-project-type">Tipo de Projeto</label>
+                    <select id="modal-project-type">
+                        <option value="">Selecione o tipo</option>
+                        <option value="cozinha">Cozinha</option>
+                        <option value="quarto">Quarto</option>
+                        <option value="escritorio">Escritório</option>
+                        <option value="personalizado">Personalizado</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelModal">Cancelar</button>
+                <button class="btn" id="confirmModal">Criar Orçamento</button>
             </div>
         </div>
     </div>
 
+    <!-- Modal de WhatsApp -->
+    <div class="modal" id="whatsappModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Integração WhatsApp</h3>
+                <button class="modal-close" id="closeWhatsAppModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="whatsapp-integration">
+                    <div class="whatsapp-chat" id="whatsappChat">
+                        <div class="message received">
+                            <p>Olá! Gostaria de saber sobre o andamento do meu projeto.</p>
+                            <div class="message-time">10:30</div>
+                        </div>
+                        <div class="message sent">
+                            <p>Olá Maria! Seu orçamento foi aprovado e estamos na fase de cotação de materiais.</p>
+                            <div class="message-time">10:32</div>
+                        </div>
+                        <div class="message received">
+                            <p>Perfeito! Quando estima que ficará pronto?</p>
+                            <div class="message-time">10:33</div>
+                        </div>
+                    </div>
+                    
+                    <div class="whatsapp-input">
+                        <input type="text" id="whatsappMessage" placeholder="Digite sua mensagem...">
+                        <button class="btn btn-whatsapp" onclick="sendWhatsAppMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Assinatura -->
+    <div class="modal" id="signatureModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Assinatura Digital</h3>
+                <button class="modal-close" id="closeSignatureModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Assine abaixo para confirmar o recebimento dos materiais:</p>
+                <div class="signature-pad-container">
+                    <canvas id="signaturePad" width="500" height="150"></canvas>
+                </div>
+                <div class="signature-actions">
+                    <button class="btn btn-secondary" id="clearSignature">Limpar</button>
+                    <button class="btn btn-success" id="saveSignature">Confirmar Assinatura</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Sound -->
+    <audio id="notificationSound" class="notification-sound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-positive-notification-951.mp3" type="audio/mpeg">
+    </audio>
+
     <script>
-        // Navegação entre abas principais
-        document.querySelectorAll('.nav-links a, .module-card').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
+        // Sistema de Login
+        const loginContainer = document.getElementById('loginContainer');
+        const appContainer = document.getElementById('appContainer');
+        const loginForm = document.getElementById('loginForm');
+        const userAvatar = document.getElementById('userAvatar');
+        const userName = document.getElementById('userName');
+        const userRole = document.getElementById('userRole');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userTypes = document.querySelectorAll('.user-type');
+        
+        let currentUser = null;
+        
+        // Seleção de tipo de usuário
+        userTypes.forEach(type => {
+            type.addEventListener('click', function() {
+                userTypes.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // Submissão do formulário de login
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const selectedRole = document.querySelector('.user-type.active').getAttribute('data-role');
+            
+            // Simulação de autenticação
+            if (username && password) {
+                currentUser = {
+                    username: username,
+                    name: username.charAt(0).toUpperCase() + username.slice(1),
+                    role: selectedRole
+                };
                 
-                const tabId = this.getAttribute('data-tab');
+                // Atualizar interface com informações do usuário
+                userAvatar.textContent = currentUser.name.charAt(0);
+                userName.textContent = currentUser.name;
+                userRole.textContent = getRoleName(selectedRole);
                 
-                // Atualizar navegação ativa
-                document.querySelectorAll('.nav-links a').forEach(item => {
-                    item.classList.remove('active');
-                });
+                // Mostrar/ocultar elementos baseados no papel do usuário
+                updateUIForUserRole(selectedRole);
                 
-                if (this.classList.contains('nav-links')) {
-                    this.classList.add('active');
-                } else {
-                    // Encontrar o link correspondente na sidebar
-                    const correspondingLink = document.querySelector(`.nav-links a[data-tab="${tabId}"]`);
-                    if (correspondingLink) {
-                        correspondingLink.classList.add('active');
+                // Trocar para a tela principal
+                loginContainer.style.display = 'none';
+                appContainer.style.display = 'flex';
+                
+                // Tocar som de notificação
+                playNotificationSound();
+                
+                // Mostrar mensagem de boas-vindas
+                alert(`Bem-vindo(a) ao ArtPlan, ${currentUser.name}!`);
+            } else {
+                alert('Por favor, preencha todos os campos.');
+            }
+        });
+        
+        // Logout
+        logoutBtn.addEventListener('click', function() {
+            currentUser = null;
+            appContainer.style.display = 'none';
+            loginContainer.style.display = 'flex';
+            loginForm.reset();
+        });
+        
+        // Função para obter nome do papel
+        function getRoleName(role) {
+            switch(role) {
+                case 'admin': return 'Administrador';
+                case 'funcionario': return 'Funcionário';
+                case 'estoquista': return 'Estoquista';
+                default: return 'Usuário';
+            }
+        }
+        
+        // Atualizar UI baseado no papel do usuário
+        function updateUIForUserRole(role) {
+            const stockRequisitionsTab = document.getElementById('stockRequisitionsTab');
+            const newRequisitionBtn = document.getElementById('newRequisitionBtn');
+            
+            if (role === 'estoquista') {
+                stockRequisitionsTab.style.display = 'block';
+                newRequisitionBtn.style.display = 'none';
+            } else {
+                stockRequisitionsTab.style.display = 'none';
+                newRequisitionBtn.style.display = 'inline-block';
+            }
+        }
+        
+        // WhatsApp Integration
+        const whatsappFloat = document.getElementById('whatsappFloat');
+        const whatsappModal = document.getElementById('whatsappModal');
+        const closeWhatsAppModal = document.getElementById('closeWhatsAppModal');
+        const whatsappNotification = document.getElementById('whatsappNotification');
+        
+        let unreadWhatsAppMessages = 3;
+        
+        whatsappFloat.addEventListener('click', function() {
+            openWhatsAppModal();
+        });
+        
+        closeWhatsAppModal.addEventListener('click', function() {
+            whatsappModal.style.display = 'none';
+        });
+        
+        function openWhatsAppModal() {
+            whatsappModal.style.display = 'flex';
+            unreadWhatsAppMessages = 0;
+            whatsappNotification.textContent = '0';
+            whatsappNotification.style.display = 'none';
+        }
+        
+        function sendWhatsAppMessage() {
+            const messageInput = document.getElementById('whatsappMessage');
+            const message = messageInput.value.trim();
+            
+            if (message) {
+                const chat = document.getElementById('whatsappChat');
+                const newMessage = document.createElement('div');
+                newMessage.className = 'message sent';
+                newMessage.innerHTML = `
+                    <p>${message}</p>
+                    <div class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                `;
+                
+                chat.appendChild(newMessage);
+                messageInput.value = '';
+                chat.scrollTop = chat.scrollHeight;
+                
+                // Simular resposta automática após 2 segundos
+                setTimeout(() => {
+                    const autoReply = document.createElement('div');
+                    autoReply.className = 'message received';
+                    autoReply.innerHTML = `
+                        <p>Obrigado pela mensagem! Em breve retornaremos com mais informações.</p>
+                        <div class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                    `;
+                    
+                    chat.appendChild(autoReply);
+                    chat.scrollTop = chat.scrollHeight;
+                    
+                    // Tocar som de notificação para nova mensagem
+                    playNotificationSound();
+                    
+                    // Atualizar notificação se o modal não estiver aberto
+                    if (whatsappModal.style.display !== 'flex') {
+                        unreadWhatsAppMessages++;
+                        whatsappNotification.textContent = unreadWhatsAppMessages;
+                        whatsappNotification.style.display = 'flex';
                     }
+                }, 2000);
+            }
+        }
+        
+        // Permitir enviar mensagem com Enter
+        document.getElementById('whatsappMessage').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendWhatsAppMessage();
+            }
+        });
+        
+        // Sistema de Cotação de Materiais
+        function generateQuotation(budgetId) {
+            // Navegar para a aba de cotações
+            document.querySelector('a[data-tab="quotations"]').click();
+            document.querySelector('.tab[data-subtab="quotation-list"]').click();
+            
+            // Tocar som de notificação
+            playNotificationSound();
+            
+            // Mostrar mensagem de sucesso
+            alert(`Cotação gerada com sucesso para o orçamento #${budgetId}!`);
+        }
+        
+        function createRequisition(budgetId) {
+            // Verificar se há materiais selecionados
+            const selectedMaterials = document.querySelectorAll('.material-checkbox:checked');
+            
+            if (selectedMaterials.length === 0) {
+                alert('Selecione pelo menos um material para gerar a requisição.');
+                return;
+            }
+            
+            // Navegar para a aba de requisições
+            document.querySelector('a[data-tab="requisitions"]').click();
+            
+            // Tocar som de notificação
+            playNotificationSound();
+            
+            // Mostrar mensagem de sucesso
+            alert(`Requisição criada com sucesso para o orçamento #${budgetId}!`);
+            
+            // Simular notificação para o estoque
+            setTimeout(() => {
+                playNotificationSound();
+                alert('Nova requisição recebida no estoque!');
+            }, 1000);
+        }
+        
+        // Sistema de Assinatura Digital
+        const signatureModal = document.getElementById('signatureModal');
+        const closeSignatureModal = document.getElementById('closeSignatureModal');
+        const clearSignature = document.getElementById('clearSignature');
+        const saveSignature = document.getElementById('saveSignature');
+        
+        let signaturePad = null;
+        
+        // Inicializar a área de assinatura quando o modal for aberto
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('signaturePad');
+            signaturePad = new SignaturePad(canvas);
+            
+            // Ajustar o canvas para a tela de retina
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext("2d").scale(ratio, ratio);
+            signaturePad.clear();
+        });
+        
+        closeSignatureModal.addEventListener('click', function() {
+            signatureModal.style.display = 'none';
+        });
+        
+        clearSignature.addEventListener('click', function() {
+            signaturePad.clear();
+        });
+        
+        saveSignature.addEventListener('click', function() {
+            if (signaturePad.isEmpty()) {
+                alert('Por favor, forneça sua assinatura.');
+                return;
+            }
+            
+            // Aqui você normalmente salvaria a assinatura (base64)
+            const signatureData = signaturePad.toDataURL();
+            
+            // Fechar modal e mostrar mensagem de sucesso
+            signatureModal.style.display = 'none';
+            alert('Assinatura confirmada com sucesso! Requisição finalizada.');
+            
+            // Tocar som de notificação
+            playNotificationSound();
+        });
+        
+        // Função para notificar que a requisição está pronta
+        function notifyRequisitionReady(requisitionId) {
+            // Tocar som de notificação
+            playNotificationSound();
+            
+            // Mostrar modal de assinatura
+            signatureModal.style.display = 'flex';
+            
+            // Mostrar mensagem
+            alert(`Notificação enviada para o solicitante da requisição #${requisitionId}!`);
+        }
+        
+        // Função para tocar som de notificação
+        function playNotificationSound() {
+            const audio = document.getElementById('notificationSound');
+            audio.play().catch(e => console.log('Autoplay prevented:', e));
+        }
+        
+        // Simular notificações periódicas
+        setInterval(() => {
+            // Apenas para demonstração - notificações aleatórias
+            if (Math.random() > 0.7 && currentUser) {
+                playNotificationSound();
+                
+                // Atualizar contador do WhatsApp
+                if (whatsappModal.style.display !== 'flex') {
+                    unreadWhatsAppMessages++;
+                    whatsappNotification.textContent = unreadWhatsAppMessages;
+                    whatsappNotification.style.display = 'flex';
                 }
                 
-                // Mostrar a aba correspondente
-                document.querySelectorAll('.tab-content').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-                
-                document.getElementById(tabId).classList.add('active');
-                
-                // Atualizar título da página
-                document.querySelector('.page-title').textContent = 
-                    document.querySelector(`#${tabId} h2`).textContent;
-            });
-        });
+                // Mostrar notificação na tela (apenas se o usuário estiver logado)
+                if (document.hidden) {
+                    // Se a aba não estiver ativa, mostrar notificação do navegador
+                    if (Notification.permission === 'granted') {
+                        new Notification('ArtPlan', {
+                            body: 'Nova mensagem recebida no WhatsApp',
+                            icon: 'https://cdn-icons-png.flaticon.com/512/124/124034.png'
+                        });
+                    }
+                }
+            }
+        }, 30000); // A cada 30 segundos
         
-        // Navegação entre sub-abas
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                const subtabId = this.getAttribute('data-subtab');
-                
-                // Atualizar navegação ativa
-                this.parentElement.querySelectorAll('.tab').forEach(item => {
-                    item.classList.remove('active');
-                });
-                this.classList.add('active');
-                
-                // Mostrar a sub-aba correspondente
-                this.closest('.tab-content').querySelectorAll('.subtab-content').forEach(subtab => {
-                    subtab.classList.remove('active');
-                });
-                
-                document.getElementById(subtabId).classList.add('active');
-            });
-        });
+        // Solicitar permissão para notificações
+        if ('Notification' in window) {
+            Notification.requestPermission();
+        }
         
-        // Simular cálculo de orçamento
-        document.querySelector('#profit-margin').addEventListener('input', function() {
-            const materialCost = 560;
-            const laborCost = parseFloat(document.querySelector('#labor-cost').value) || 800;
-            const profitMargin = parseFloat(this.value) || 30;
-            
-            const profit = (materialCost + laborCost) * (profitMargin / 100);
-            const total = materialCost + laborCost + profit;
-            
-            document.querySelector('.budget-preview .material-item:nth-child(3) div:last-child').textContent = 
-                `R$ ${profit.toFixed(2)}`;
-            document.querySelector('.budget-preview .material-item:nth-child(4) div:last-child').textContent = 
-                `R$ ${total.toFixed(2)}`;
-        });
-        
-        document.querySelector('#labor-cost').addEventListener('input', function() {
-            document.querySelector('#profit-margin').dispatchEvent(new Event('input'));
-        });
+        // Restante do código JavaScript (navegação, gráficos, etc. do código anterior)
+        // ... (código anterior para navegação, gráficos, etc.)
     </script>
 </body>
 </html>

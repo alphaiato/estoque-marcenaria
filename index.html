@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArtPlan - Sistema de Gestão para Marcenaria</title>
+    <title>ArtPlan - Sistema Completo para Marcenaria</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
@@ -192,6 +192,7 @@
             text-decoration: none;
             border-radius: 5px;
             transition: all 0.3s;
+            position: relative;
         }
         
         .nav-links a:hover, .nav-links a.active {
@@ -1114,6 +1115,152 @@
             font-size: 0.7rem;
             font-weight: bold;
         }
+        
+        /* Automation Panel */
+        .automation-panel {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .automation-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .automation-item:last-child {
+            border-bottom: none;
+        }
+        
+        .automation-info h4 {
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+        
+        .automation-info p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--success);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* Production Timeline */
+        .timeline {
+            position: relative;
+            max-width: 100%;
+            margin: 20px 0;
+        }
+        
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            background-color: var(--primary);
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -2px;
+        }
+        
+        .timeline-item {
+            padding: 10px 30px;
+            position: relative;
+            width: 50%;
+            box-sizing: border-box;
+        }
+        
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border: 4px solid var(--primary);
+            border-radius: 50%;
+            top: 15px;
+            z-index: 1;
+        }
+        
+        .left {
+            left: 0;
+        }
+        
+        .right {
+            left: 50%;
+        }
+        
+        .left::after {
+            right: -10px;
+        }
+        
+        .right::after {
+            left: -10px;
+        }
+        
+        .timeline-content {
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .timeline-content h4 {
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+        
+        .timeline-content p {
+            margin: 0;
+            color: var(--gray);
+        }
     </style>
 </head>
 <body>
@@ -1247,7 +1394,6 @@
 
             <!-- Dashboard Tab -->
             <div id="dashboard" class="tab-content active">
-                <!-- Conteúdo do Dashboard (mantido do código anterior) -->
                 <div class="dashboard">
                     <div class="card">
                         <div class="card-header">
@@ -1324,6 +1470,14 @@
                         <p class="module-desc">Controle de estoque e lista de materiais (BOM)</p>
                     </div>
                     
+                    <div class="module-card" data-tab="production">
+                        <div class="module-icon">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                        <h3 class="module-title">Produção</h3>
+                        <p class="module-desc">Plano de corte e ordem de produção</p>
+                    </div>
+                    
                     <div class="module-card" data-tab="quotations">
                         <div class="module-icon">
                             <i class="fas fa-clipboard-list"></i>
@@ -1338,6 +1492,30 @@
                         </div>
                         <h3 class="module-title">Requisições</h3>
                         <p class="module-desc">Solicitação e controle de materiais para produção</p>
+                    </div>
+                    
+                    <div class="module-card" data-tab="financial">
+                        <div class="module-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="module-title">Financeiro</h3>
+                        <p class="module-desc">Custos, preços e fluxo de caixa</p>
+                    </div>
+                    
+                    <div class="module-card" data-tab="clients">
+                        <div class="module-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="module-title">Clientes e Projetos</h3>
+                        <p class="module-desc">Cadastro e acompanhamento de projetos</p>
+                    </div>
+                    
+                    <div class="module-card" data-tab="reports">
+                        <div class="module-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h3 class="module-title">Relatórios</h3>
+                        <p class="module-desc">Relatórios de produção e financeiros</p>
                     </div>
                 </div>
             </div>
@@ -1395,6 +1573,9 @@
                                             <button class="btn btn-success btn-sm" title="Gerar Cotação" onclick="generateQuotation('0452')">
                                                 <i class="fas fa-clipboard-list"></i>
                                             </button>
+                                            <button class="btn btn-whatsapp btn-sm" title="Enviar por WhatsApp" onclick="sendBudgetByWhatsApp('0452')">
+                                                <i class="fab fa-whatsapp"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -1413,6 +1594,27 @@
                                             <button class="btn btn-secondary btn-sm" title="Editar">
                                                 <i class="fas fa-edit"></i>
                                             </button>
+                                            <button class="btn btn-whatsapp btn-sm" title="Enviar por WhatsApp" onclick="sendBudgetByWhatsApp('0451')">
+                                                <i class="fab fa-whatsapp"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#0450</td>
+                                    <td>Ana Oliveira</td>
+                                    <td>Escrivaninha Home Office</td>
+                                    <td>R$ 890,00</td>
+                                    <td>10/09/2023</td>
+                                    <td><span class="status-badge status-rejected">Recusado</span></td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm" title="Visualizar">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-secondary btn-sm" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -1421,7 +1623,529 @@
                     </div>
                 </div>
                 
-                <!-- Conteúdo das outras sub-abas de orçamentos (mantido do código anterior) -->
+                <div id="create-budget" class="subtab-content">
+                    <h3 style="margin-bottom: 20px;">Criar Novo Orçamento</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="project-name">Nome do Projeto</label>
+                            <input type="text" id="project-name" placeholder="Ex: Guarda-roupa Casal 3 portas">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="client-select">Cliente</label>
+                            <select id="client-select">
+                                <option value="">Selecione um cliente</option>
+                                <option value="1">Maria Silva</option>
+                                <option value="2">João Santos</option>
+                                <option value="3">Ana Oliveira</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="project-description">Descrição do Projeto</label>
+                        <textarea id="project-description" rows="4" placeholder="Descreva o projeto detalhadamente..."></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="project-deadline">Prazo de Entrega</label>
+                            <input type="date" id="project-deadline">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="project-priority">Prioridade</label>
+                            <select id="project-priority">
+                                <option value="baixa">Baixa</option>
+                                <option value="media">Média</option>
+                                <option value="alta">Alta</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <h4 style="margin: 20px 0 10px; color: var(--primary);">Lista de Materiais</h4>
+                    
+                    <div class="material-list">
+                        <div class="material-item">
+                            <div>Chapa MDF 15mm</div>
+                            <div>4 unidades</div>
+                            <div>R$ 320,00</div>
+                            <div class="material-actions">
+                                <button class="btn btn-sm"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="material-item">
+                            <div>Ferragens para portas</div>
+                            <div>3 conjuntos</div>
+                            <div>R$ 150,00</div>
+                            <div class="material-actions">
+                                <button class="btn btn-sm"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="material-item">
+                            <div>Puxadores cromados</div>
+                            <div>6 unidades</div>
+                            <div>R$ 90,00</div>
+                            <div class="material-actions">
+                                <button class="btn btn-sm"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-secondary" style="margin-top: 10px;">
+                        <i class="fas fa-plus"></i> Adicionar Material
+                    </button>
+                    
+                    <div class="form-row" style="margin-top: 20px;">
+                        <div class="form-group">
+                            <label for="labor-cost">Custo de Mão de Obra (R$)</label>
+                            <input type="number" id="labor-cost" value="800">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="profit-margin">Margem de Lucro (%)</label>
+                            <input type="number" id="profit-margin" value="30">
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn"><i class="fas fa-calculator"></i> Calcular Orçamento</button>
+                        <button class="btn btn-success"><i class="fas fa-save"></i> Salvar Orçamento</button>
+                        <button class="btn btn-secondary"><i class="fas fa-file-pdf"></i> Gerar PDF</button>
+                        <button class="btn btn-whatsapp"><i class="fab fa-whatsapp"></i> Enviar por WhatsApp</button>
+                    </div>
+                    
+                    <div class="budget-preview">
+                        <h4 style="margin-bottom: 15px; color: var(--primary);">Prévia do Orçamento</h4>
+                        <div class="material-item">
+                            <div><strong>Total Materiais</strong></div>
+                            <div><strong>R$ 560,00</strong></div>
+                        </div>
+                        <div class="material-item">
+                            <div>Mão de Obra</div>
+                            <div>R$ 800,00</div>
+                        </div>
+                        <div class="material-item">
+                            <div>Lucro (30%)</div>
+                            <div>R$ 408,00</div>
+                        </div>
+                        <div class="material-item" style="border-top: 2px solid var(--primary); padding-top: 15px; font-size: 1.2rem;">
+                            <div><strong>Total do Projeto</strong></div>
+                            <div><strong>R$ 1.768,00</strong></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="templates" class="subtab-content">
+                    <h3 style="margin-bottom: 20px;">Templates de Projetos</h3>
+                    <p>Gerencie aqui os modelos de projetos reutilizáveis.</p>
+                    
+                    <div class="modules-grid" style="margin-top: 20px;">
+                        <div class="module-card">
+                            <div class="module-icon">
+                                <i class="fas fa-archive"></i>
+                            </div>
+                            <h3 class="module-title">Armário de Cozinha</h3>
+                            <p class="module-desc">Template padrão para armários de cozinha</p>
+                            <div class="action-buttons" style="margin-top: 15px;">
+                                <button class="btn btn-sm">Usar</button>
+                                <button class="btn btn-secondary btn-sm">Editar</button>
+                            </div>
+                        </div>
+                        
+                        <div class="module-card">
+                            <div class="module-icon">
+                                <i class="fas fa-bed"></i>
+                            </div>
+                            <h3 class="module-title">Guarda-Roupa Casal</h3>
+                            <p class="module-desc">Modelo para guarda-roupas de casal</p>
+                            <div class="action-buttons" style="margin-top: 15px;">
+                                <button class="btn btn-sm">Usar</button>
+                                <button class="btn btn-secondary btn-sm">Editar</button>
+                            </div>
+                        </div>
+                        
+                        <div class="module-card">
+                            <div class="module-icon">
+                                <i class="fas fa-desktop"></i>
+                            </div>
+                            <h3 class="module-title">Escrivaninha</h3>
+                            <p class="module-desc">Template para escrivaninhas e mesas</p>
+                            <div class="action-buttons" style="margin-top: 15px;">
+                                <button class="btn btn-sm">Usar</button>
+                                <button class="btn btn-secondary btn-sm">Editar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Materiais Tab -->
+            <div id="materials" class="tab-content">
+                <div class="header" style="border-bottom: none; margin-bottom: 10px;">
+                    <h2 style="color: var(--primary);">Gestão de Materiais</h2>
+                    <button class="btn btn-success">
+                        <i class="fas fa-plus"></i> Novo Material
+                    </button>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> <strong>Atenção:</strong> 5 materiais com estoque abaixo do mínimo.
+                </div>
+                
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchMaterials" placeholder="Buscar materiais...">
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" data-subtab="stock">Estoque</div>
+                    <div class="tab" data-subtab="categories">Categorias</div>
+                    <div class="tab" data-subtab="suppliers">Fornecedores</div>
+                </div>
+                
+                <div id="stock" class="subtab-content active">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Material</th>
+                                    <th>Categoria</th>
+                                    <th>Estoque Atual</th>
+                                    <th>Estoque Mínimo</th>
+                                    <th>Unidade</th>
+                                    <th>Preço Unit.</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Chapa MDF 15mm</td>
+                                    <td>Madeira</td>
+                                    <td>8</td>
+                                    <td>10</td>
+                                    <td>unidades</td>
+                                    <td>R$ 80,00</td>
+                                    <td><span class="status-badge status-rejected">Estoque Baixo</span></td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                            <button class="btn btn-whatsapp btn-sm" title="Solicitar ao Fornecedor"><i class="fab fa-whatsapp"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Chapa MDF 18mm</td>
+                                    <td>Madeira</td>
+                                    <td>15</td>
+                                    <td>10</td>
+                                    <td>unidades</td>
+                                    <td>R$ 95,00</td>
+                                    <td><span class="status-badge status-approved">Normal</span></td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Puxadores Cromados</td>
+                                    <td>Ferragens</td>
+                                    <td>22</td>
+                                    <td>30</td>
+                                    <td>unidades</td>
+                                    <td>R$ 15,00</td>
+                                    <td><span class="status-badge status-pending">Atenção</span></td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                            <button class="btn btn-whatsapp btn-sm" title="Solicitar ao Fornecedor"><i class="fab fa-whatsapp"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="categories" class="subtab-content">
+                    <h3 style="margin-bottom: 20px;">Categorias de Materiais</h3>
+                    <div class="modules-grid">
+                        <div class="module-card">
+                            <div class="module-icon">
+                                <i class="fas fa-tree"></i>
+                            </div>
+                            <h3 class="module-title">Madeiras</h3>
+                            <p class="module-desc">Chapas, compensados, MDF</p>
+                            <div class="action-buttons" style="margin-top: 15px;">
+                                <button class="btn btn-sm">Ver Materiais</button>
+                            </div>
+                        </div>
+                        
+                        <div class="module-card">
+                            <div class="module-icon">
+                                <i class="fas fa-cog"></i>
+                            </div>
+                            <h3 class="module-title">Ferragens</h3>
+                            <p class="module-desc">Dobradiças, puxadores, fechaduras</p>
+                            <div class="action-buttons" style="margin-top: 15px;">
+                                <button class="btn btn-sm">Ver Materiais</button>
+                            </div>
+                        </div>
+                        
+                        <div class="module-card">
+                            <div class="module-icon">
+                                <i class="fas fa-paint-roller"></i>
+                            </div>
+                            <h3 class="module-title">Acabamentos</h3>
+                            <p class="module-desc">Vernizes, tintas, colas</p>
+                            <div class="action-buttons" style="margin-top: 15px;">
+                                <button class="btn btn-sm">Ver Materiais</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="suppliers" class="subtab-content">
+                    <h3 style="margin-bottom: 20px;">Fornecedores</h3>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Fornecedor</th>
+                                    <th>Contato</th>
+                                    <th>Materiais</th>
+                                    <th>Avaliação</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Madeireira Silva</td>
+                                    <td>(11) 99999-9999</td>
+                                    <td>Madeiras</td>
+                                    <td>★★★★☆</td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-whatsapp btn-sm"><i class="fab fa-whatsapp"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Ferragram</td>
+                                    <td>(11) 98888-8888</td>
+                                    <td>Ferragens</td>
+                                    <td>★★★★★</td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-whatsapp btn-sm"><i class="fab fa-whatsapp"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Produção Tab -->
+            <div id="production" class="tab-content">
+                <div class="header" style="border-bottom: none; margin-bottom: 10px;">
+                    <h2 style="color: var(--primary);">Produção</h2>
+                    <button class="btn btn-success">
+                        <i class="fas fa-plus"></i> Nova OP
+                    </button>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" data-subtab="production-order">Ordem de Produção</div>
+                    <div class="tab" data-subtab="cutting-plan">Plano de Corte</div>
+                    <div class="tab" data-subtab="timeline">Timeline</div>
+                </div>
+                
+                <div id="production-order" class="subtab-content active">
+                    <h3 style="margin-bottom: 20px;">Ordens de Produção</h3>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>OP</th>
+                                    <th>Projeto</th>
+                                    <th>Cliente</th>
+                                    <th>Prazo</th>
+                                    <th>Progresso</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#OP-124</td>
+                                    <td>Guarda-roupa Casal</td>
+                                    <td>Maria Silva</td>
+                                    <td>15/10/2023</td>
+                                    <td>
+                                        <div class="progress-bar">
+                                            <div class="progress" style="width: 75%;"></div>
+                                        </div>
+                                        75%
+                                    </td>
+                                    <td><span class="status-badge status-in-progress">Em Andamento</span></td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-whatsapp btn-sm" title="Notificar Cliente"><i class="fab fa-whatsapp"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#OP-123</td>
+                                    <td>Armário de Cozinha</td>
+                                    <td>João Santos</td>
+                                    <td>10/10/2023</td>
+                                    <td>
+                                        <div class="progress-bar">
+                                            <div class="progress" style="width: 100%;"></div>
+                                        </div>
+                                        100%
+                                    </td>
+                                    <td><span class="status-badge status-completed">Concluído</span></td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-whatsapp btn-sm" title="Notificar Cliente"><i class="fab fa-whatsapp"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#OP-122</td>
+                                    <td>Escrivaninha Home Office</td>
+                                    <td>Ana Oliveira</td>
+                                    <td>05/10/2023</td>
+                                    <td>
+                                        <div class="progress-bar">
+                                            <div class="progress" style="width: 40%;"></div>
+                                        </div>
+                                        40%
+                                    </td>
+                                    <td><span class="status-badge status-in-progress">Em Andamento</span></td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-whatsapp btn-sm" title="Notificar Cliente"><i class="fab fa-whatsapp"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="cutting-plan" class="subtab-content">
+                    <h3 style="margin-bottom: 20px;">Plano de Corte</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="material-select">Material a Ser Cortado</label>
+                            <select id="material-select">
+                                <option value="">Chapa MDF 15mm</option>
+                                <option value="1">Chapa MDF 18mm</option>
+                                <option value="2">Compensado 15mm</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="sheet-size">Tamanho da Chapa</label>
+                            <select id="sheet-size">
+                                <option value="2750x1830">2750 x 1830 mm</option>
+                                <option value="2440x1220">2440 x 1220 mm</option>
+                                <option value="2200x1200">2200 x 1200 mm</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="cutting-visualization" id="cuttingVisualization">
+                        <!-- As peças de corte serão adicionadas dinamicamente via JavaScript -->
+                    </div>
+                    
+                    <div class="cutting-plan">
+                        <h4 style="margin-bottom: 15px; color: var(--primary);">Resumo do Plano de Corte</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <p><strong>Material:</strong> Chapa MDF 15mm</p>
+                                <p><strong>Chapas Utilizadas:</strong> 5 unidades</p>
+                            </div>
+                            <div class="form-group">
+                                <p><strong>Aproveitamento:</strong> 87%</p>
+                                <p><strong>Sobras:</strong> 0,8 m²</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn"><i class="fas fa-calculator"></i> Otimizar Corte</button>
+                        <button class="btn btn-success"><i class="fas fa-save"></i> Salvar Plano</button>
+                        <button class="btn btn-secondary"><i class="fas fa-print"></i> Imprimir</button>
+                        <button class="btn btn-whatsapp"><i class="fab fa-whatsapp"></i> Compartilhar</button>
+                    </div>
+                </div>
+                
+                <div id="timeline" class="subtab-content">
+                    <h3 style="margin-bottom: 20px;">Timeline de Produção</h3>
+                    
+                    <div class="timeline">
+                        <div class="timeline-item left">
+                            <div class="timeline-content">
+                                <h4>Orçamento Aprovado</h4>
+                                <p>15/09/2023 - Cliente aprovou o orçamento</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item right">
+                            <div class="timeline-content">
+                                <h4>Cotacao de Materiais</h4>
+                                <p>18/09/2023 - Materiais separados por ambiente</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item left">
+                            <div class="timeline-content">
+                                <h4>Requisição de Materiais</h4>
+                                <p>20/09/2023 - Materiais solicitados ao estoque</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item right">
+                            <div class="timeline-content">
+                                <h4>Produção Iniciada</h4>
+                                <p>25/09/2023 - Início da fabricação</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item left">
+                            <div class="timeline-content">
+                                <h4>Acabamento</h4>
+                                <p>05/10/2023 - Aplicação de verniz e montagem</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item right">
+                            <div class="timeline-content">
+                                <h4>Entrega</h4>
+                                <p>15/10/2023 - Previsão de entrega</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Cotação de Materiais Tab -->
@@ -1706,7 +2430,735 @@
                 </div>
             </div>
 
-            <!-- Conteúdo das outras abas (mantido do código anterior) -->
+            <!-- Financeiro Tab -->
+            <div id="financial" class="tab-content">
+                <div class="header" style="border-bottom: none; margin-bottom: 10px;">
+                    <h2 style="color: var(--primary);">Financeiro</h2>
+                    <button class="btn btn-success">
+                        <i class="fas fa-plus"></i> Nova Transação
+                    </button>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" data-subtab="cashflow">Fluxo de Caixa</div>
+                    <div class="tab" data-subtab="costs">Custos e Preços</div>
+                    <div class="tab" data-subtab="invoices">Faturas</div>
+                </div>
+                
+                <div id="cashflow" class="subtab-content active">
+                    <div class="charts-row">
+                        <div class="chart-container">
+                            <h3 class="chart-title">Fluxo de Caixa (Últimos 6 meses)</h3>
+                            <canvas id="cashFlowChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h3 class="chart-title">Distribuição de Custos</h3>
+                            <canvas id="costsChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                    <th>Categoria</th>
+                                    <th>Valor</th>
+                                    <th>Tipo</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>20/09/2023</td>
+                                    <td>Venda Guarda-roupa Casal</td>
+                                    <td>Vendas</td>
+                                    <td>R$ 1.768,00</td>
+                                    <td><span style="color: var(--success);">Entrada</span></td>
+                                    <td><span class="status-badge status-approved">Pago</span></td>
+                                </tr>
+                                <tr>
+                                    <td>18/09/2023</td>
+                                    <td>Compra Materiais MDF</td>
+                                    <td>Matéria-prima</td>
+                                    <td>R$ 850,00</td>
+                                    <td><span style="color: var(--danger);">Saída</span></td>
+                                    <td><span class="status-badge status-approved">Pago</span></td>
+                                </tr>
+                                <tr>
+                                    <td>15/09/2023</td>
+                                    <td>Salários Setembro</td>
+                                    <td>Pessoal</td>
+                                    <td>R$ 5.200,00</td>
+                                    <td><span style="color: var(--danger);">Saída</span></td>
+                                    <td><span class="status-badge status-pending">Pendente</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="costs" class="subtab-content">
+                    <h3 style="margin-bottom: 20px;">Custos e Preços</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="default-margin">Margem de Lucro Padrão (%)</label>
+                            <input type="number" id="default-margin" value="30">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="labor-cost-hour">Custo da Hora de Mão de Obra (R$)</label>
+                            <input type="number" id="labor-cost-hour" value="45">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="overhead-cost">Custos Indiretos Mensais (R$)</label>
+                        <input type="number" id="overhead-cost" value="3200">
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-success">Salvar Configurações</button>
+                        <button class="btn btn-secondary">Recalcular Preços</button>
+                    </div>
+                    
+                    <div class="chart-container" style="margin-top: 30px;">
+                        <h3 class="chart-title">Análise de Rentabilidade por Projeto</h3>
+                        <canvas id="profitabilityChart"></canvas>
+                    </div>
+                </div>
+                
+                <div id="invoices" class="subtab-content">
+                    <h3 style="margin-bottom: 20px;">Faturas e Pagamentos</h3>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nº Fatura</th>
+                                    <th>Cliente</th>
+                                    <th>Valor</th>
+                                    <th>Vencimento</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#FAT-2023-001</td>
+                                    <td>Maria Silva</td>
+                                    <td>R$ 1.768,00</td>
+                                    <td>25/09/2023</td>
+                                    <td><span class="status-badge status-approved">Paga</span></td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-whatsapp btn-sm"><i class="fab fa-whatsapp"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#FAT-2023-002</td>
+                                    <td>João Santos</td>
+                                    <td>R$ 3.245,00</td>
+                                    <td>30/09/2023</td>
+                                    <td><span class="status-badge status-pending">Pendente</span></td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-whatsapp btn-sm"><i class="fab fa-whatsapp"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clientes Tab -->
+            <div id="clients" class="tab-content">
+                <div class="header" style="border-bottom: none; margin-bottom: 10px;">
+                    <h2 style="color: var(--primary);">Clientes e Projetos</h2>
+                    <button class="btn btn-success">
+                        <i class="fas fa-plus"></i> Novo Cliente
+                    </button>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" data-subtab="clients-list">Lista de Clientes</div>
+                    <div class="tab" data-subtab="projects">Projetos</div>
+                    <div class="tab" data-subtab="automation">Automação WhatsApp</div>
+                </div>
+                
+                <div id="clients-list" class="subtab-content active">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchClients" placeholder="Buscar clientes...">
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Contato</th>
+                                    <th>Projetos</th>
+                                    <th>Último Projeto</th>
+                                    <th>Valor Total</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Maria Silva</td>
+                                    <td>maria@email.com<br>(11) 99999-9999</td>
+                                    <td>3</td>
+                                    <td>Guarda-roupa Casal</td>
+                                    <td>R$ 5.240,00</td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-whatsapp btn-sm"><i class="fab fa-whatsapp"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>João Santos</td>
+                                    <td>joao@email.com<br>(11) 98888-8888</td>
+                                    <td>2</td>
+                                    <td>Armário de Cozinha</td>
+                                    <td>R$ 7.150,00</td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-whatsapp btn-sm"><i class="fab fa-whatsapp"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Ana Oliveira</td>
+                                    <td>ana@email.com<br>(11) 97777-7777</td>
+                                    <td>1</td>
+                                    <td>Escrivaninha Home Office</td>
+                                    <td>R$ 890,00</td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-whatsapp btn-sm"><i class="fab fa-whatsapp"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="projects" class="subtab-content">
+                    <h3 style="margin-bottom: 20px;">Projetos em Andamento</h3>
+                    
+                    <div class="modules-grid">
+                        <div class="module-card">
+                            <div class="module-icon">
+                                <i class="fas fa-bed"></i>
+                            </div>
+                            <h3 class="module-title">Guarda-roupa Casal</h3>
+                            <p class="module-desc">Maria Silva - 75% concluído</p>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: 75%;"></div>
+                            </div>
+                            <div class="action-buttons" style="margin-top: 15px;">
+                                <button class="btn btn-sm">Detalhes</button>
+                                <button class="btn btn-whatsapp btn-sm"><i class="fab fa-whatsapp"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="module-card">
+                            <div class="module-icon">
+                                <i class="fas fa-archive"></i>
+                            </div>
+                            <h3 class="module-title">Armário de Cozinha</h3>
+                            <p class="module-desc">João Santos - 100% concluído</p>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: 100%;"></div>
+                            </div>
+                            <div class="action-buttons" style="margin-top: 15px;">
+                                <button class="btn btn-sm">Detalhes</button>
+                                <button class="btn btn-whatsapp btn-sm"><i class="fab fa-whatsapp"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="module-card">
+                            <div class="module-icon">
+                                <i class="fas fa-desktop"></i>
+                            </div>
+                            <h3 class="module-title">Escrivaninha Home Office</h3>
+                            <p class="module-desc">Ana Oliveira - 40% concluído</p>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: 40%;"></div>
+                            </div>
+                            <div class="action-buttons" style="margin-top: 15px;">
+                                <button class="btn btn-sm">Detalhes</button>
+                                <button class="btn btn-whatsapp btn-sm"><i class="fab fa-whatsapp"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="automation" class="subtab-content">
+                    <h3 style="margin-bottom: 20px;">Automação de Atendimento WhatsApp</h3>
+                    
+                    <div class="automation-panel">
+                        <div class="automation-item">
+                            <div class="automation-info">
+                                <h4>Boas-vindas Automática</h4>
+                                <p>Mensagem enviada quando um cliente inicia contato</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="automation-item">
+                            <div class="automation-info">
+                                <h4>Notificação de Orçamento</h4>
+                                <p>Envia orçamento automaticamente por WhatsApp</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="automation-item">
+                            <div class="automation-info">
+                                <h4>Acompanhamento de Produção</h4>
+                                <p>Notifica cliente sobre andamento do projeto</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="automation-item">
+                            <div class="automation-info">
+                                <h4>Lembrete de Pagamento</h4>
+                                <p>Envia lembretes automáticos de pagamento</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-success">Salvar Configurações</button>
+                        <button class="btn btn-secondary">Testar Automação</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Relatórios Tab -->
+            <div id="reports" class="tab-content">
+                <div class="header" style="border-bottom: none; margin-bottom: 10px;">
+                    <h2 style="color: var(--primary);">Relatórios</h2>
+                    <button class="btn btn-success">
+                        <i class="fas fa-download"></i> Exportar Relatórios
+                    </button>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" data-subtab="production-reports">Produção</div>
+                    <div class="tab" data-subtab="financial-reports">Financeiro</div>
+                    <div class="tab" data-subtab="stock-reports">Estoque</div>
+                </div>
+                
+                <div id="production-reports" class="subtab-content active">
+                    <h3 style="margin-bottom: 20px;">Relatórios de Produção</h3>
+                    
+                    <div class="charts-row">
+                        <div class="chart-container">
+                            <h3 class="chart-title">Eficiência de Produção</h3>
+                            <canvas id="efficiencyChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h3 class="chart-title">Tempo por Etapa</h3>
+                            <canvas id="timeChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Projeto</th>
+                                    <th>Cliente</th>
+                                    <th>Data Início</th>
+                                    <th>Data Término</th>
+                                    <th>Tempo Total</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Guarda-roupa Casal</td>
+                                    <td>Maria Silva</td>
+                                    <td>15/09/2023</td>
+                                    <td>15/10/2023</td>
+                                    <td>30 dias</td>
+                                    <td><span class="status-badge status-in-progress">Em Andamento</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Armário de Cozinha</td>
+                                    <td>João Santos</td>
+                                    <td>10/08/2023</td>
+                                    <td>10/09/2023</td>
+                                    <td>31 dias</td>
+                                    <td><span class="status-badge status-completed">Concluído</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Escrivaninha Home Office</td>
+                                    <td>Ana Oliveira</td>
+                                    <td>05/09/2023</td>
+                                    <td>05/10/2023</td>
+                                    <td>30 dias</td>
+                                    <td><span class="status-badge status-in-progress">Em Andamento</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="financial-reports" class="subtab-content">
+                    <h3 style="margin-bottom: 20px;">Relatórios Financeiros</h3>
+                    
+                    <div class="charts-row">
+                        <div class="chart-container">
+                            <h3 class="chart-title">Receita vs Despesas</h3>
+                            <canvas id="revenueExpensesChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h3 class="chart-title">Lucratividade por Projeto</h3>
+                            <canvas id="profitabilityReportChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Mês</th>
+                                    <th>Receita</th>
+                                    <th>Despesas</th>
+                                    <th>Lucro</th>
+                                    <th>Margem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Setembro/2023</td>
+                                    <td>R$ 42.580,00</td>
+                                    <td>R$ 28.450,00</td>
+                                    <td>R$ 14.130,00</td>
+                                    <td>33,2%</td>
+                                </tr>
+                                <tr>
+                                    <td>Agosto/2023</td>
+                                    <td>R$ 38.750,00</td>
+                                    <td>R$ 26.120,00</td>
+                                    <td>R$ 12.630,00</td>
+                                    <td>32,6%</td>
+                                </tr>
+                                <tr>
+                                    <td>Julho/2023</td>
+                                    <td>R$ 35.420,00</td>
+                                    <td>R$ 24.880,00</td>
+                                    <td>R$ 10.540,00</td>
+                                    <td>29,8%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="stock-reports" class="subtab-content">
+                    <h3 style="margin-bottom: 20px;">Relatórios de Estoque</h3>
+                    
+                    <div class="charts-row">
+                        <div class="chart-container">
+                            <h3 class="chart-title">Movimentação de Estoque</h3>
+                            <canvas id="stockMovementChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h3 class="chart-title">Giro de Materiais</h3>
+                            <canvas id="materialTurnoverChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Material</th>
+                                    <th>Estoque Inicial</th>
+                                    <th>Entradas</th>
+                                    <th>Saídas</th>
+                                    <th>Estoque Final</th>
+                                    <th>Giro</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Chapa MDF 15mm</td>
+                                    <td>12</td>
+                                    <td>20</td>
+                                    <td>24</td>
+                                    <td>8</td>
+                                    <td>2,0</td>
+                                </tr>
+                                <tr>
+                                    <td>Chapa MDF 18mm</td>
+                                    <td>8</td>
+                                    <td>15</td>
+                                    <td>8</td>
+                                    <td>15</td>
+                                    <td>0,8</td>
+                                </tr>
+                                <tr>
+                                    <td>Puxadores Cromados</td>
+                                    <td>30</td>
+                                    <td>50</td>
+                                    <td>58</td>
+                                    <td>22</td>
+                                    <td>1,9</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configurações Tab -->
+            <div id="settings" class="tab-content">
+                <div class="header" style="border-bottom: none; margin-bottom: 10px;">
+                    <h2 style="color: var(--primary);">Configurações</h2>
+                    <button class="btn btn-success">
+                        <i class="fas fa-save"></i> Salvar Configurações
+                    </button>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" data-subtab="products">Cadastro de Produtos</div>
+                    <div class="tab" data-subtab="margins">Configuração de Margens</div>
+                    <div class="tab" data-subtab="users">Usuários e Permissões</div>
+                    <div class="tab" data-subtab="whatsapp">Integração WhatsApp</div>
+                </div>
+                
+                <div id="products" class="subtab-content active">
+                    <h3 style="margin-bottom: 20px;">Cadastro de Produtos e Materiais</h3>
+                    <p>Configure os materiais, ferragens e serviços da marcenaria.</p>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Categoria</th>
+                                    <th>Produto</th>
+                                    <th>Unidade</th>
+                                    <th>Preço</th>
+                                    <th>Fornecedor</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Madeira</td>
+                                    <td>Chapa MDF 15mm</td>
+                                    <td>unidade</td>
+                                    <td>R$ 80,00</td>
+                                    <td>Madeireira Silva</td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Ferragens</td>
+                                    <td>Puxador Cromado</td>
+                                    <td>unidade</td>
+                                    <td>R$ 15,00</td>
+                                    <td>Ferragram</td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Acabamento</td>
+                                    <td>Verniz Brilhante</td>
+                                    <td>litro</td>
+                                    <td>R$ 45,00</td>
+                                    <td>Tintas & Cia</td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <button class="btn btn-success" style="margin-top: 15px;">
+                        <i class="fas fa-plus"></i> Adicionar Produto
+                    </button>
+                </div>
+                
+                <div id="margins" class="subtab-content">
+                    <h3 style="margin-bottom: 20px;">Configuração de Margens</h3>
+                    <p>Defina as políticas de preços e lucros da marcenaria.</p>
+                    
+                    <div class="form-group">
+                        <label for="default-margin">Margem de Lucro Padrão (%)</label>
+                        <input type="number" id="default-margin" value="30">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="labor-cost-hour">Custo da Hora de Mão de Obra (R$)</label>
+                        <input type="number" id="labor-cost-hour" value="45">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="discount-policy">Política de Desconto Máximo (%)</label>
+                        <input type="number" id="discount-policy" value="10">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tax-rate">Taxa de Impostos (%)</label>
+                        <input type="number" id="tax-rate" value="12">
+                    </div>
+                    
+                    <button class="btn btn-success">Salvar Configurações</button>
+                </div>
+                
+                <div id="users" class="subtab-content">
+                    <h3 style="margin-bottom: 20px;">Usuários e Permissões</h3>
+                    <p>Gerencie os usuários e suas permissões no sistema.</p>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Usuário</th>
+                                    <th>E-mail</th>
+                                    <th>Perfil</th>
+                                    <th>Último Acesso</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>João Marceneiro</td>
+                                    <td>joao@artplan.com</td>
+                                    <td>Administrador</td>
+                                    <td>20/09/2023 14:30</td>
+                                    <td><span class="status-badge status-approved">Ativo</span></td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Maria Assistente</td>
+                                    <td>maria@artplan.com</td>
+                                    <td>Usuário</td>
+                                    <td>19/09/2023 09:15</td>
+                                    <td><span class="status-badge status-approved">Ativo</span></td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Pedro Estoquista</td>
+                                    <td>pedro@artplan.com</td>
+                                    <td>Estoquista</td>
+                                    <td>18/09/2023 16:45</td>
+                                    <td><span class="status-badge status-approved">Ativo</span></td>
+                                    <td>
+                                        <div class="material-actions">
+                                            <button class="btn btn-sm"><i class="fas fa-edit"></i></button>
+                                            <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <button class="btn btn-success" style="margin-top: 15px;">
+                        <i class="fas fa-plus"></i> Adicionar Usuário
+                    </button>
+                </div>
+                
+                <div id="whatsapp" class="subtab-content">
+                    <h3 style="margin-bottom: 20px;">Integração WhatsApp</h3>
+                    <p>Configure a integração com o WhatsApp para automação de atendimento.</p>
+                    
+                    <div class="form-group">
+                        <label for="whatsapp-number">Número do WhatsApp Business</label>
+                        <input type="text" id="whatsapp-number" placeholder="+55 (11) 99999-9999">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="whatsapp-token">Token de API</label>
+                        <input type="password" id="whatsapp-token" placeholder="Digite o token de acesso">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="whatsapp-webhook">URL do Webhook</label>
+                        <input type="text" id="whatsapp-webhook" placeholder="https://suaempresa.com/webhook">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="business-hours">Horário de Funcionamento</label>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="time" id="open-time" value="08:00">
+                            </div>
+                            <div class="form-group">
+                                <input type="time" id="close-time" value="18:00">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-success">Salvar Configurações</button>
+                        <button class="btn btn-secondary">Testar Conexão</button>
+                        <button class="btn btn-whatsapp">Conectar WhatsApp</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -2081,6 +3533,12 @@
             alert(`Notificação enviada para o solicitante da requisição #${requisitionId}!`);
         }
         
+        // Função para enviar orçamento por WhatsApp
+        function sendBudgetByWhatsApp(budgetId) {
+            playNotificationSound();
+            alert(`Orçamento #${budgetId} enviado por WhatsApp com sucesso!`);
+        }
+        
         // Função para tocar som de notificação
         function playNotificationSound() {
             const audio = document.getElementById('notificationSound');
@@ -2118,8 +3576,309 @@
             Notification.requestPermission();
         }
         
-        // Restante do código JavaScript (navegação, gráficos, etc. do código anterior)
-        // ... (código anterior para navegação, gráficos, etc.)
-    </script>
-</body>
-</html>
+        // Visualização do Plano de Corte
+        function renderCuttingPlan() {
+            const container = document.getElementById('cuttingVisualization');
+            container.innerHTML = '';
+            
+            // Criar representação visual das chapas e peças cortadas
+            const sheetWidth = 2750; // em mm
+            const sheetHeight = 1830; // em mm
+            const containerWidth = container.clientWidth - 40; // Margem
+            const containerHeight = container.clientHeight - 40; // Margem
+            
+            // Calcular escala para caber no container
+            const scaleX = containerWidth / sheetWidth;
+            const scaleY = containerHeight / sheetHeight;
+            const scale = Math.min(scaleX, scaleY) * 0.9; // 90% para ter margem
+            
+            // Criar a chapa
+            const sheet = document.createElement('div');
+            sheet.style.width = `${sheetWidth * scale}px`;
+            sheet.style.height = `${sheetHeight * scale}px`;
+            sheet.style.backgroundColor = '#DEB887';
+            sheet.style.border = '1px solid #8B4513';
+            sheet.style.position = 'relative';
+            sheet.style.margin = 'auto';
+            
+            // Adicionar peças cortadas (exemplo)
+            const pieces = [
+                { width: 800, height: 600, top: 50, left: 50, name: 'A1' },
+                { width: 800, height: 600, top: 50, left: 900, name: 'A2' },
+                { width: 600, height: 400, top: 700, left: 50, name: 'B1' },
+                { width: 600, height: 400, top: 700, left: 700, name: 'B2' },
+                { width: 400, height: 300, top: 700, left: 1350, name: 'C1' },
+                { width: 400, height: 300, top: 1050, left: 1350, name: 'C2' }
+            ];
+            
+            pieces.forEach(piece => {
+                const pieceElement = document.createElement('div');
+                pieceElement.className = 'cutting-piece';
+                pieceElement.style.width = `${piece.width * scale}px`;
+                pieceElement.style.height = `${piece.height * scale}px`;
+                pieceElement.style.top = `${piece.top * scale}px`;
+                pieceElement.style.left = `${piece.left * scale}px`;
+                pieceElement.textContent = piece.name;
+                pieceElement.title = `Peça ${piece.name}: ${piece.width}x${piece.height}mm`;
+                sheet.appendChild(pieceElement);
+            });
+            
+            container.appendChild(sheet);
+        }
+        
+        // Inicializar visualização do plano de corte
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCuttingPlan();
+            
+            // Re-renderizar quando a janela for redimensionada
+            window.addEventListener('resize', renderCuttingPlan);
+        });
+        
+        // Gráficos
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gráfico de Receita
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            const revenueChart = new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set'],
+                    datasets: [{
+                        label: 'Receita (R$)',
+                        data: [32000, 35500, 38000, 41000, 39500, 42580],
+                        borderColor: '#8B4513',
+                        backgroundColor: 'rgba(139, 69, 19, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de Projetos por Status
+            const projectsCtx = document.getElementById('projectsChart').getContext('2d');
+            const projectsChart = new Chart(projectsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Concluídos', 'Em Andamento', 'Pendentes', 'Atrasados'],
+                    datasets: [{
+                        data: [12, 8, 5, 2],
+                        backgroundColor: [
+                            '#28a745',
+                            '#007bff',
+                            '#ffc107',
+                            '#dc3545'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de Fluxo de Caixa
+            const cashFlowCtx = document.getElementById('cashFlowChart').getContext('2d');
+            const cashFlowChart = new Chart(cashFlowCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set'],
+                    datasets: [{
+                        label: 'Entradas',
+                        data: [35000, 37000, 40000, 43000, 42000, 45000],
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                        borderColor: '#28a745',
+                        borderWidth: 1
+                    }, {
+                        label: 'Saídas',
+                        data: [30000, 32000, 35000, 38000, 37000, 39000],
+                        backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                        borderColor: '#dc3545',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de Distribuição de Custos
+            const costsCtx = document.getElementById('costsChart').getContext('2d');
+            const costsChart = new Chart(costsCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Materiais', 'Mão de Obra', 'Ferragens', 'Acabamentos', 'Outros'],
+                    datasets: [{
+                        data: [45, 35, 10, 7, 3],
+                        backgroundColor: [
+                            '#8B4513',
+                            '#D2691E',
+                            '#A0522D',
+                            '#CD853F',
+                            '#DEB887'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de Rentabilidade
+            const profitabilityCtx = document.getElementById('profitabilityChart').getContext('2d');
+            const profitabilityChart = new Chart(profitabilityCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Guarda-roupa', 'Armário Cozinha', 'Escrivaninha', 'Mesa Jantar', 'Estante'],
+                    datasets: [{
+                        label: 'Custos',
+                        data: [1200, 2200, 600, 900, 1100],
+                        backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                        borderColor: '#dc3545',
+                        borderWidth: 1
+                    }, {
+                        label: 'Receita',
+                        data: [1768, 3245, 890, 1350, 1650],
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                        borderColor: '#28a745',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de Eficiência
+            const efficiencyCtx = document.getElementById('efficiencyChart').getContext('2d');
+            const efficiencyChart = new Chart(efficiencyCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set'],
+                    datasets: [{
+                        label: 'Eficiência (%)',
+                        data: [78, 82, 85, 80, 83, 87, 85, 88, 90],
+                        borderColor: '#8B4513',
+                        backgroundColor: 'rgba(139, 69, 19, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            min: 70,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de Tempo por Etapa
+            const timeCtx = document.getElementById('timeChart').getContext('2d');
+            const timeChart = new Chart(timeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Orçamento', 'Cotação', 'Produção', 'Acabamento', 'Entrega'],
+                    datasets: [{
+                        label: 'Dias',
+                        data: [2, 3, 15, 5, 2],
+                        backgroundColor: [
+                            '#8B4513',
+                            '#D2691E',
+                            '#A0522D',
+                            '#CD853F',
+                            '#DEB887'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+        
+        // Navegação entre abas principais
+        document.querySelectorAll('.nav-links a, .module-card').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const tabId = this.getAttribute('data-tab');
+                
+                // Atualizar navegação ativa
+                document.querySelectorAll('.nav-links a').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                if (this.classList.contains('nav-links')) {
+                    this.classList.add('active');
+                } else {
+                    // Encontrar o link correspondente na sidebar
+                    const correspondingLink = document.querySelector(`.nav-links a[data-tab="${tabId}"]`);
+                    if (correspondingLink) {
+                        correspondingLink.classList.add('active');
+                    }
+                }
+                
+                // Mostrar a
